@@ -221,7 +221,6 @@ bool Game::Init(HINSTANCE hInstance)
 	
 	
 	
-<<<<<<< HEAD
 	/*
 	Objects->createObject(branch, 60.0f, 0.25f, 55.0f, ctStumble, 1);
 	Objects->createObject(branch, 0.0f, 0.25f, 20.0f, ctStumble, 1);
@@ -447,7 +446,7 @@ bool Game::Init(HINSTANCE hInstance)
 
 	Objects->createObject(orange, -59 + x2o, 4 + y2o, 111 + z2o, ctCollect, 1);
 	Objects->createObject(orange, -45 + x2o, 4 + y2o, 111 + z2o, ctCollect, 1);
-	//
+	
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, 53 + z2o, ctCollect, 1);
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, 13 + z2o, ctCollect, 1);
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, -27 + z2o, ctCollect, 1);
