@@ -35,7 +35,7 @@ LevelBuilder::LevelBuilder(ID3D11Device* device, TextureMgr& texMgr)
 	mFencePart2 = new BasicModel(device, texMgr, "Models\\fencepart2.obj", L"Textures\\");
 	mlvl2Ground = new BasicModel(device, texMgr, "Models\\lvl2Ground.obj", L"Textures\\");
 	mTestBarn = new BasicModel(device, texMgr, "Models\\barn.obj", L"Textures\\");
-	
+
 	mBarnBack = new BasicModel(device, texMgr, "Models\\bBack.obj", L"Textures\\");
 	mBarnFrontSide = new BasicModel(device, texMgr, "Models\\bFrontSide.obj", L"Textures\\");
 	mBarnFrontTop = new BasicModel(device, texMgr, "Models\\bFrontTop.obj", L"Textures\\");
@@ -128,7 +128,7 @@ void LevelBuilder::addLevelParts(BasicModelInstance theLevelParts)
 {
 
 	mLevelPartsInstances.push_back(theLevelParts);
-	
+
 }
 
 
@@ -258,17 +258,15 @@ void LevelBuilder::createLevelParts(int model, FLOAT x, FLOAT y, FLOAT z, int co
 		anLevelParts = mBarnSide;
 
 	}
-<<<<<<< HEAD
-	else if (model == barnside2)
-=======
 	else if (model == barnfrontside2)
->>>>>>> 1dcfd2ff1100f257b77e44fb822fd0287636f9e8
 	{
 		anLevelParts = mBarnFrontSide2;
 
 	}
-<<<<<<< HEAD
-=======
+
+
+
+
 	else if (model == roundbail)
 	{
 		anLevelParts = mRoundBail;
@@ -285,14 +283,13 @@ void LevelBuilder::createLevelParts(int model, FLOAT x, FLOAT y, FLOAT z, int co
 
 	}
 
->>>>>>> 1dcfd2ff1100f257b77e44fb822fd0287636f9e8
 
 
 
-	
 
 
-	
+
+
 
 	newLevelParts->setModel(anLevelParts);
 
@@ -364,7 +361,7 @@ void LevelBuilder::CreateBoundingBox()
 			XMFLOAT3 P = mLevelPartsInstances[i].Model->BasicVertices[j].Pos;
 
 
-			
+
 
 			minPt.x = MathHelper::Min(minPt.x, P.x);
 			minPt.y = MathHelper::Min(minPt.y, P.y);
