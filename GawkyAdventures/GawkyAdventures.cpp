@@ -17,6 +17,7 @@
 #include "LevelBuilder.h"
 #include "Player.h"
 #include "ModelEnum.cpp"
+#include "SoundManager.h"
 
 class Game : public D3DApp
 {
@@ -33,30 +34,22 @@ public:
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
-
-	//DeltaTime getter
 	float Game::getDeltaTime();
-	////////////////////
-
 private:
 
 	Sky* mSky;
+	SoundManager* mSound;
 
-	////////////////////////////////////////Player
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
 	XMVECTOR PlayerUp;
 
-
-	///////lighting
 	DirectionalLight mDirLights[3];
 	UINT mLightCount;
 
-	////// Camera
 	Camera mCam;
 
-	//mouse
 	POINT mLastMousePos;
 
 	/// DeltaTime
@@ -78,10 +71,8 @@ private:
 
 	Player* PlayerOne;
 
-
 	int totEnemy;
 	int totCollect;
-
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -92,10 +83,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-
 	Game theApp(hInstance);
-
-
 
 	if (!theApp.Init(hInstance))
 		return 0;
@@ -111,7 +99,6 @@ Game::Game(HINSTANCE hInstance)
 {
 	mMainWndCaption = L"Adventures of Gawky";
 
-
 	PlayerForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	PlayerRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	PlayerUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -119,10 +106,9 @@ Game::Game(HINSTANCE hInstance)
 	////send player information to the camera
 	mCam.getPlayerPos(mPlayerPosition);
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
-
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-
+	mSound = 0;
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -142,11 +128,17 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
+	// if sound exists, shutdown and release
+	if (mSound) {
+		mSound->Shutdown();
+		delete mSound;
+		mSound = 0;
+	}
+
 	SafeDelete(mSky);
 	SafeDelete(Objects);
 	SafeDelete(Level1);
 	SafeDelete(theEnemies);
-
 
 	Effects::DestroyAll();
 	InputLayouts::DestroyAll();
@@ -416,6 +408,18 @@ bool Game::Init(HINSTANCE hInstance)
 
 	//////////////////////////////////////////////////////////
 
+	// create sound object
+	HRESULT result;
+	mSound = new SoundManager;
+	if (!mSound) { return false; }
+
+	// init the sound object
+	result = mSound->Init(mhMainWnd);
+	if (!result) {
+		MessageBox(mhMainWnd, L"Could not initialize Direct Sound!", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 
@@ -668,6 +672,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
+			mSound->PlayWaveFile();
 		}
 
 	}

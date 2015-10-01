@@ -120,6 +120,7 @@
     <ClCompile Include="PlayState.cpp" />
     <ClCompile Include="RenderStates.cpp" />
     <ClCompile Include="Sky.cpp" />
+    <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="TextureMgr.cpp" />
     <ClCompile Include="TheObjects.cpp" />
     <ClCompile Include="Vertex.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="PlayState.h" />
     <ClInclude Include="RenderStates.h" />
     <ClInclude Include="Sky.h" />
+    <ClInclude Include="SoundManager.h" />
     <ClInclude Include="TextureMgr.h" />
     <ClInclude Include="TheObjects.h" />
     <ClInclude Include="Vertex.h" />
