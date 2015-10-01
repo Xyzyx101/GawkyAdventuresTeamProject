@@ -9,6 +9,9 @@
 #include <mmsystem.h>
 #include <dsound.h>
 #include <stdio.h>
+#include <string>
+
+using namespace std;
 
 class SoundManager
 {
@@ -19,7 +22,7 @@ public:
 
 	bool Init(HWND);
 	void Shutdown();
-	bool PlayWaveFile();
+	bool PlayWaveFile(string name);
 
 private:
 	struct WaveHeaderType
@@ -44,12 +47,11 @@ private:
 
 	bool LoadWaveFile(char*, IDirectSoundBuffer8**);
 	void ShutdownWaveFile(IDirectSoundBuffer8**);
-	
 
 	IDirectSound8* mDirectSound;
 	IDirectSoundBuffer* mPrimaryBuffer;
 	IDirectSoundBuffer8* mSecondBuffer;
-
+	IDirectSoundBuffer8* mBGMusic1Buffer;
 };
 
 #endif

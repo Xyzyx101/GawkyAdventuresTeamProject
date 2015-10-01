@@ -158,6 +158,8 @@ bool Game::Init(HINSTANCE hInstance)
 
 	mSky = new Sky(md3dDevice, L"Textures//sunsetcube1024.dds", 5000.0f);
 
+	//mSound->PlayWaveFile("bgmusic");
+
 	/// create the player
 	PlayerOne = new Player(md3dDevice, mTexMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
 
@@ -417,7 +419,7 @@ bool Game::Init(HINSTANCE hInstance)
 	result = mSound->Init(mhMainWnd);
 	if (!result) {
 		MessageBox(mhMainWnd, L"Could not initialize Direct Sound!", L"Error", MB_OK);
-		return false;
+		return true;
 	}
 
 	return true;
@@ -672,7 +674,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
-			mSound->PlayWaveFile();
+			mSound->PlayWaveFile("quack");
 		}
 
 	}

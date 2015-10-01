@@ -1,12 +1,11 @@
-
 #include "SoundManager.h"
-
 
 SoundManager::SoundManager()
 {
 	mDirectSound = 0;
 	mPrimaryBuffer = 0;
-	mSecondBuffer = 0;	
+	mSecondBuffer = 0;
+	mBGMusic1Buffer = 0;
 }
 
 SoundManager::~SoundManager()
@@ -27,17 +26,27 @@ bool SoundManager::Init(HWND hwnd) {
 		return false;
 	}
 	
+	/*
+	// Load the background music
+	result = LoadWaveFile("Sound\\ElectroSong.wav", &mBGMusic1Buffer);
+	if (!result) {
+		return false;
+	}
+	*/
+
 	// Load a wave audio file onto a secondary buffer
 	result = LoadWaveFile("Sound\\quack.wav", &mSecondBuffer);
 	if (!result) {
 		return false;
 	}
 
+	/*
 	// play the wave file now that is has been loaded
 	result = PlayWaveFile();
 	if (!result) {
 		return false;
 	}
+	*/
 
 	return true;
 }
@@ -47,11 +56,12 @@ bool SoundManager::Init(HWND hwnd) {
 void SoundManager::Shutdown() {
 	// release the 2ndary buffer
 	ShutdownWaveFile(&mSecondBuffer);
+	// release background music
+	ShutdownWaveFile(&mBGMusic1Buffer);
 	// shutdown the directsound api
 	ShutdownDirectSound();
 	return;
 }
-
 
 // initDirectSound handles getting an interface pointer to DirectSound and the default primary sound buffer.
 // Note, you can query the system for all sound devices and then grab the pointer to the primary sound buffer for a specific device.
@@ -60,7 +70,7 @@ bool SoundManager::InitDirectSound(HWND hwnd) {
 	HRESULT result;
 	DSBUFFERDESC bufferDesc;
 	WAVEFORMATEX waveFormat;
-
+	
 	// init the direct sound interface pointer for the default sound device
 	result = DirectSoundCreate8(NULL, &mDirectSound, NULL);
 	if (FAILED(result)) { return false; }
@@ -111,7 +121,6 @@ void SoundManager::ShutdownDirectSound() {
 		mDirectSound->Release();
 		mDirectSound = 0;
 	}
-
 	return;
 }
 
@@ -234,20 +243,29 @@ void SoundManager::ShutdownWaveFile(IDirectSoundBuffer8** secondaryBuffer) {
 	return;
 }
 
-bool SoundManager::PlayWaveFile() {
+bool SoundManager::PlayWaveFile(string name) {
 	HRESULT result;
-
-	// set position at the beginning of the sound buffer
-	result = mSecondBuffer->SetCurrentPosition(0);
-	if (FAILED(result)) { return false; }
-
-	// set volume of the buffer to 100%
-	result = mSecondBuffer->SetVolume(DSBVOLUME_MAX);
-	if (FAILED(result)) { return false; }
-
-	// play the content of the secondary sound buffer
-	result = mSecondBuffer->Play(0, 0, 0);
-	if (FAILED(result)) { return false; }
-
+	
+	// if buffer != 0 try to play it
+	if (mBGMusic1Buffer != 0 && name == "bgmusic") {
+		// set position at the beginning of the sound buffer
+		result = mBGMusic1Buffer->SetCurrentPosition(0);
+		if (FAILED(result)) { return false; }
+		// set volume of the buffer to 100%
+		result = mBGMusic1Buffer->SetVolume(DSBVOLUME_MAX);
+		if (FAILED(result)) { return false; }
+		// play the content of this buffer
+		result = mBGMusic1Buffer->Play(0, 0, 0);
+		if (FAILED(result)) { return false; }
+	}
+	if (mSecondBuffer != 0 && name == "quack") {
+		result = mSecondBuffer->SetCurrentPosition(0);
+		if (FAILED(result)) { return false; }
+		result = mSecondBuffer->SetVolume(DSBVOLUME_MAX);
+		if (FAILED(result)) { return false; }
+		result = mSecondBuffer->Play(0, 0, 0);
+		if (FAILED(result)) { return false; }
+	}
+	
 	return true;
 }
