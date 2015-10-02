@@ -26,27 +26,19 @@ bool SoundManager::Init(HWND hwnd) {
 		return false;
 	}
 	
-	/*
+	
 	// Load the background music
 	result = LoadWaveFile("Sound\\ElectroSong.wav", &mBGMusic1Buffer);
 	if (!result) {
 		return false;
 	}
-	*/
+	
 
 	// Load a wave audio file onto a secondary buffer
 	result = LoadWaveFile("Sound\\quack.wav", &mSecondBuffer);
 	if (!result) {
 		return false;
 	}
-
-	/*
-	// play the wave file now that is has been loaded
-	result = PlayWaveFile();
-	if (!result) {
-		return false;
-	}
-	*/
 
 	return true;
 }

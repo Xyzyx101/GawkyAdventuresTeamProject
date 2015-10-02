@@ -17,7 +17,7 @@
 #include "LevelBuilder.h"
 #include "Player.h"
 #include "ModelEnum.cpp"
-#include "SoundManager.h"
+#include "SoundSystem.h"
 
 class Game : public D3DApp
 {
@@ -38,7 +38,7 @@ public:
 private:
 
 	Sky* mSky;
-	SoundManager* mSound;
+	SoundSystem* mSound;
 
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
@@ -130,7 +130,7 @@ Game::~Game()
 {
 	// if sound exists, shutdown and release
 	if (mSound) {
-		mSound->Shutdown();
+		mSound->ShutdownSound();
 		delete mSound;
 		mSound = 0;
 	}
@@ -157,8 +157,6 @@ bool Game::Init(HINSTANCE hInstance)
 	mTexMgr.Init(md3dDevice);
 
 	mSky = new Sky(md3dDevice, L"Textures//sunsetcube1024.dds", 5000.0f);
-
-	//mSound->PlayWaveFile("bgmusic");
 
 	/// create the player
 	PlayerOne = new Player(md3dDevice, mTexMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
@@ -364,23 +362,19 @@ bool Game::Init(HINSTANCE hInstance)
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, 13 + z2o, ctCollect, 1);
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, -27 + z2o, ctCollect, 1);
 
-
 	theEnemies->createEnemy(simpleEnemy, 31 + x2o, 2 + y2o, -6 + z2o, 76 + x2o, 2 + y2o, -6 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 76 + x2o, 2 + y2o, 32 + z2o, 31 + x2o, 2 + y2o, 32 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
 	theEnemies->createEnemy(simpleEnemy, 27 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -42 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 47 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -62 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
-
 	///unkillable enemies must be placed at the end
 	theEnemies->createEnemy(tractor, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 1, 30, ctUnkillable);
 	theEnemies->createEnemy(tractor, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 1, 30, ctUnkillable);
 
-
 	theEnemies->CreateBoundingBox();
 	Objects->CreateBoundingBox();
 	Level1->CreateBoundingBox();
-
 
 	////////
 
@@ -410,17 +404,19 @@ bool Game::Init(HINSTANCE hInstance)
 
 	//////////////////////////////////////////////////////////
 
+	
 	// create sound object
 	HRESULT result;
-	mSound = new SoundManager;
+	mSound = new SoundSystem;
 	if (!mSound) { return false; }
 
 	// init the sound object
 	result = mSound->Init(mhMainWnd);
 	if (!result) {
-		MessageBox(mhMainWnd, L"Could not initialize Direct Sound!", L"Error", MB_OK);
+		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
 		return true;
 	}
+	
 
 	return true;
 }
@@ -674,7 +670,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
-			mSound->PlayWaveFile("quack");
+			//mSound->PlayWaveFile("quack");
 		}
 
 	}
@@ -700,7 +696,6 @@ void Game::UpdateScene(float dt)
 	// Switch the number of lights based on key presses.
 	//
 	if (GetAsyncKeyState('0') & 0x8000)
-
 	{
 		mLightCount = 0;
 	}
@@ -725,6 +720,7 @@ void Game::UpdateScene(float dt)
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
+	mSound->UpdateSound();
 }
 
 void Game::addDeltaTime(float dt)

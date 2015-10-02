@@ -41,8 +41,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\SBC\Documents\GitHub\GawkyAdventuresTeamProject\GawkyAdventures\Sound\FMODex\api\inc;$(DXSDK_DIR)\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\SBC\Documents\GitHub\GawkyAdventuresTeamProject\GawkyAdventures\Sound\FMODex\api\lib;$(DXSDK_DIR)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -120,7 +120,7 @@
     <ClCompile Include="PlayState.cpp" />
     <ClCompile Include="RenderStates.cpp" />
     <ClCompile Include="Sky.cpp" />
-    <ClCompile Include="SoundManager.cpp" />
+    <ClCompile Include="SoundSystem.cpp" />
     <ClCompile Include="TextureMgr.cpp" />
     <ClCompile Include="TheObjects.cpp" />
     <ClCompile Include="Vertex.cpp" />
@@ -155,7 +155,7 @@
     <ClInclude Include="PlayState.h" />
     <ClInclude Include="RenderStates.h" />
     <ClInclude Include="Sky.h" />
-    <ClInclude Include="SoundManager.h" />
+    <ClInclude Include="SoundSystem.h" />
     <ClInclude Include="TextureMgr.h" />
     <ClInclude Include="TheObjects.h" />
     <ClInclude Include="Vertex.h" />
@@ -165,6 +165,10 @@
   <ItemGroup>
     <Library Include="Effects11.lib" />
     <Library Include="Effects11d.lib" />
+    <Library Include="Sound\FMODex\api\lib\fmodex_vc.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sound\FMODex\api\fmodex.dll" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

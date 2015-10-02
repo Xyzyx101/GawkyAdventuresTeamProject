@@ -134,7 +134,7 @@
     <ClCompile Include="MainMenuState.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SoundManager.cpp">
+    <ClCompile Include="SoundSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -235,7 +235,7 @@
     <ClInclude Include="MainMenuState.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SoundManager.h">
+    <ClInclude Include="SoundSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -246,5 +246,13 @@
     <Library Include="Effects11d.lib">
       <Filter>Common</Filter>
     </Library>
+    <Library Include="Sound\FMODex\api\lib\fmodex_vc.lib">
+      <Filter>Source Files</Filter>
+    </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sound\FMODex\api\fmodex.dll">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
