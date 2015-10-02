@@ -128,9 +128,8 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
-	// if sound exists, shutdown and release
+	// if sound exists, delete
 	if (mSound) {
-		mSound->ShutdownSound();
 		delete mSound;
 		mSound = 0;
 	}
@@ -414,7 +413,7 @@ bool Game::Init(HINSTANCE hInstance)
 	result = mSound->Init(mhMainWnd);
 	if (!result) {
 		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
-		return true;
+		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
 	}
 	
 
@@ -670,7 +669,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
-			//mSound->PlayWaveFile("quack");
+			mSound->Play("quack");
 		}
 
 	}
@@ -720,7 +719,7 @@ void Game::UpdateScene(float dt)
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
-	mSound->UpdateSound();
+
 }
 
 void Game::addDeltaTime(float dt)

@@ -2,9 +2,9 @@
 #define _SOUNDSYSTEM_H_
 
 #include <fmod.hpp>
-#include <fmod_errors.h>
 #include <windows.h>
-#include <mmsystem.h>
+#include <string>
+using namespace std;
 
 class SoundSystem 
 {
@@ -16,14 +16,12 @@ public:
 	FMOD::Sound      *sound1, *sound2, *sound3, *music;
 	FMOD::Channel    *channel1, *channel2, *channel3, *musicChannel;
 	FMOD_RESULT      result;
+	FMOD_CAPS		 caps;
 	unsigned int     version;
 	int              key;
 
-	bool Init(HWND);
-	void UpdateSound();
-	void ShutdownSound();
-
-	FMOD_CAPS caps;
+	bool Init(HWND hWnd);
+	void Play(string soundName);
 };
 
 #endif
