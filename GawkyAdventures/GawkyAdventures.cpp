@@ -35,10 +35,11 @@ public:
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
 	float Game::getDeltaTime();
+
 private:
 
 	Sky* mSky;
-	SoundSystem* mSound;
+	
 
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
@@ -108,7 +109,7 @@ Game::Game(HINSTANCE hInstance)
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-	mSound = 0;
+	//mSound = 0;
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -129,10 +130,10 @@ Game::Game(HINSTANCE hInstance)
 Game::~Game()
 {
 	// if sound exists, delete
-	if (mSound) {
-		delete mSound;
-		mSound = 0;
-	}
+	//if (mSound) {
+	//	delete mSound;
+	//	mSound = 0;
+	//}
 
 	SafeDelete(mSky);
 	SafeDelete(Objects);
@@ -405,17 +406,14 @@ bool Game::Init(HINSTANCE hInstance)
 
 	
 	// create sound object
-	HRESULT result;
-	mSound = new SoundSystem;
-	if (!mSound) { return false; }
-
+	HRESULT result;\
 	// init the sound object
-	result = mSound->Init(mhMainWnd);
+	result = SoundSystem::Init(mhMainWnd);
 	if (!result) {
 		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
 		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
 	}
-	
+
 
 	return true;
 }
@@ -669,7 +667,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
-			mSound->Play("quack");
+			SoundSystem::Play(QUACK);
 		}
 
 	}

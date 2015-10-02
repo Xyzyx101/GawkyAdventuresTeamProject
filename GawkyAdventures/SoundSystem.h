@@ -3,14 +3,18 @@
 
 #include <fmod.hpp>
 #include <windows.h>
-#include <string>
-using namespace std;
+enum SOUND { QUACK, SAYQUACK, MOBDEATH };
 
 class SoundSystem 
 {
 public:
-	SoundSystem();
+	
 	~SoundSystem();
+	static void Play(SOUND soundName);
+	static bool Init(HWND hWnd);
+private:
+	SoundSystem();
+	static SoundSystem* instance;
 
 	FMOD::System     *system;
 	FMOD::Sound      *sound1, *sound2, *sound3, *music;
@@ -20,8 +24,7 @@ public:
 	unsigned int     version;
 	int              key;
 
-	bool Init(HWND hWnd);
-	void Play(string soundName);
+	
 };
 
 #endif
