@@ -35,6 +35,9 @@ public:
 
 private:
 
+	void initPlayer();
+	void setPlayerModel(ID3D11Device* device, TextureMgr& texMgr, const std::string& modelFilename, const std::wstring& texturePath);
+
 	XMFLOAT3 mPlayerPosition;
 	XMFLOAT3 mPlayerScale;
 	XMFLOAT4 mPlayerRotationQuad;

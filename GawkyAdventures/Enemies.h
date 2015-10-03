@@ -1,13 +1,10 @@
 #ifndef Enemies_H
 #define Enemies_H
 
-
 #include "BasicModel.h"
 #include "xnacollision.h"
 #include "GameTimer.h"
 #include "SoundSystem.h"
-
-
 
 class BasicModel;
 class Camera;

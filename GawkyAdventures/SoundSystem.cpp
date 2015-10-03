@@ -1,15 +1,14 @@
 #include "SoundSystem.h"
+// each sound effect must;
+//			a. have its own channel and sound pointer
+//			b. be loaded in and setup in init
+//			c. have unique name in the header enum SOUND
+// call from anywhere by including SoundSystem in classes header
+// and use SoundSystem::Play(enumName);
 
 SoundSystem* SoundSystem::instance = new SoundSystem();
-
-SoundSystem::SoundSystem()
-{
-
-}
-
-SoundSystem::~SoundSystem()
-{
-}
+SoundSystem::SoundSystem() {}
+SoundSystem::~SoundSystem() {}
 
 bool SoundSystem::Init(HWND hWnd) {
 	FMOD_RESULT result;
@@ -24,7 +23,6 @@ bool SoundSystem::Init(HWND hWnd) {
 		MessageBox(hWnd, L"FMOD_Ex getVersion Failed!", L"FMOD Error", MB_OK);
 		return false;
 	}
-
 	if (instance->version < FMOD_VERSION) {
 		MessageBox(hWnd, L"FMOD_Ex Version Issue!", L"FMOD Error", MB_OK);
 		return false;
@@ -37,7 +35,7 @@ bool SoundSystem::Init(HWND hWnd) {
 
 	result = instance->system->getNumDrivers(&numdrivers);
 	if (result != FMOD_OK) {
-		MessageBox(hWnd, L"FMOD_Ex getNUmDrivers Failed!", L"FMOD Error", MB_OK);
+		MessageBox(hWnd, L"FMOD_Ex getNumDrivers Failed!", L"FMOD Error", MB_OK);
 		return false;
 	}
 	if (numdrivers == 0) {
@@ -60,10 +58,7 @@ bool SoundSystem::Init(HWND hWnd) {
 			return false;
 		}
 		if (caps & FMOD_CAPS_HARDWARE_EMULATED) {
-			/*
-				User has 'Acceleration' slider set to off. Bad for latency!
-				Might want to warn the user about this.
-				*/
+			// User has 'Acceleration' slider set to off. Bad for latency!
 			MessageBox(hWnd, L"Hardware Acceleration is off! You should change that.", L"FMOD Notice", MB_OK);
 			result = instance->system->setDSPBufferSize(1024, 10);
 			if (result != FMOD_OK) {
@@ -71,23 +66,22 @@ bool SoundSystem::Init(HWND hWnd) {
 				return false;
 			}
 		}
-
+		// get the driver info
 		result = instance->system->getDriverInfo(0, name, 256, 0);
 		if (result != FMOD_OK) {
 			MessageBox(hWnd, L"FMOD_Ex getDriverInfo Failed!", L"FMOD Error", MB_OK);
 			return false;
 		}
 		if (strstr(name, "SigmaTel")) {
-			/*
-				Sigmatel sound devices crackle for some reason if the format is PCM 16bit.
-				PCM floating point output seems to solve it.
-				*/
+			// Sigmatel devices can crackle if the format is PCM 16bit.
+			// So, set PCM floating point output, seems to solve it.
 			result = instance->system->setSoftwareFormat(48000, FMOD_SOUND_FORMAT_PCMFLOAT, 0, 0, FMOD_DSP_RESAMPLER_LINEAR);
 			if (result != FMOD_OK) {
 				MessageBox(hWnd, L"FMOD_Ex setSoftwareFormat Failed!", L"FMOD Error", MB_OK);
 				return false;
 			}
 		}
+		// init fmod normally
 		result = instance->system->init(100, FMOD_INIT_NORMAL, 0);
 		if (result == FMOD_ERR_OUTPUT_CREATEBUFFER) {
 			// Speakermode not selected/supported by soundcard. Switch to stereo.
@@ -103,6 +97,7 @@ bool SoundSystem::Init(HWND hWnd) {
 			MessageBox(hWnd, L"FMOD_Ex system->Init Failed!", L"FMOD Error", MB_OK);
 			return false;
 		}
+		// LOAD & SETUP SOUNDS
 		// create sound1
 		result = instance->system->createSound("Sound\\quack.wav", FMOD_HARDWARE, 0, &instance->sound1);
 		if (result != FMOD_OK) {
@@ -139,6 +134,7 @@ bool SoundSystem::Init(HWND hWnd) {
 			MessageBox(hWnd, L"FMOD_Ex setMode(sound3) Failed!", L"FMOD Error", MB_OK);
 			return false;
 		}
+		// LOAD & PLAY MUSIC
 		// create a stream for our BGMusic
 		result = instance->system->createStream("Sound\\ElectroSong.wav", FMOD_HARDWARE | FMOD_LOOP_NORMAL | FMOD_2D, 0, &instance->music);
 		if (result != FMOD_OK) {
@@ -151,8 +147,8 @@ bool SoundSystem::Init(HWND hWnd) {
 			MessageBox(hWnd, L"FMOD_Ex playSound Failed!", L"FMOD Error", MB_OK);
 			return false;
 		}
-
-		// set volume
+		
+		// set volume (entire musicChannel - all sounds)
 		result = instance->musicChannel->setVolume(0.05f);
 		if (result != FMOD_OK) {
 			MessageBox(hWnd, L"FMOD_Ex setVolume Failed!", L"FMOD Error", MB_OK);
@@ -162,9 +158,7 @@ bool SoundSystem::Init(HWND hWnd) {
 		instance->channel1 = 0;
 		instance->channel2 = 0;
 		instance->channel3 = 0;
-
 	}
-
 	return true;
 }
 
@@ -205,7 +199,8 @@ void SoundSystem::Play(SOUND soundName) {
 		}
 		channelPlaying = false;
 		break;
-
+	default:
+		break;
 	}
 	instance->system->update();
 }
