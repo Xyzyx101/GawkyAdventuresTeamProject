@@ -4,61 +4,31 @@
 #include "Effects.h"
 #include "Camera.h"
 #include "Enemy.h"
-#include "ModelEnum.cpp"
-
-
-
-
-
-
-
+#include "ModelEnum.h"
 
 Enemies::Enemies(ID3D11Device* device, TextureMgr& texMgr)
 {
-
 	mSimpleEnemy = new BasicModel(device, texMgr, "Models\\simpleenemy.obj", L"Textures\\");
 	mTractor = new BasicModel(device, texMgr, "Models\\tractor.obj", L"Textures\\");
-
-	
-
-
 }
-
 
 Enemies::~Enemies()
 {
-
-
 	for (UINT i = 0; i < enemyclass.size(); ++i)
 	{
-
 		delete enemyclass[i];
-
-
 	}
-
 }
-
-
-
-
-
 
 void Enemies::draw(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTechnique* activeTexTech)
 {
-
-
-
 	XMMATRIX world;
 	XMMATRIX worldInvTranspose;
 	XMMATRIX worldViewProj;
 
-
 	XMMATRIX view = camera.View();
 	XMMATRIX proj = camera.Proj();
 	XMMATRIX viewProj = camera.ViewProj();
-
-
 
 	for (UINT modelIndex = 0; modelIndex < mEnemyInstances.size(); ++modelIndex)
 	{

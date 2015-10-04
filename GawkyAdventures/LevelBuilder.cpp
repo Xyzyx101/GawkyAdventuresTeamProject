@@ -4,7 +4,7 @@
 #include "Effects.h"
 #include "Camera.h"
 #include "LevelParts.h"
-#include "ModelEnum.cpp"
+#include "ModelEnum.h"
 
 
 

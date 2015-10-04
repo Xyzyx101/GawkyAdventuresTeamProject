@@ -3,7 +3,6 @@
 #include "Effects.h"
 
 
-
 #include "Camera.h"
 
 
@@ -51,7 +50,6 @@ void Enemy::setcollisiontype(int collisiontype)
 
 void Enemy::setSpeed(FLOAT theSpeed)
 {
-
 	speed = theSpeed;
 }
 

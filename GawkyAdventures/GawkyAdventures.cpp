@@ -16,7 +16,8 @@
 #include "TheObjects.h"
 #include "LevelBuilder.h"
 #include "Player.h"
-#include "ModelEnum.cpp"
+#include "ModelEnum.h"
+#include "ModelLoader.h"
 
 class Game : public D3DApp
 {
@@ -175,6 +176,8 @@ bool Game::Init(HINSTANCE hInstance)
 
 	/// create the player
 	PlayerOne = new Player(md3dDevice, mTexMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
+	ModelLoader* modelLoader = new ModelLoader();
+	PlayerOne->init( md3dDevice, modelLoader, mTexMgr, L"Textures\\" );
 
 	//// load  the level models
 	theEnemies = new Enemies(md3dDevice, mTexMgr);
@@ -683,7 +686,7 @@ void Game::UpdateScene(float dt)
 	}
 
 
-	XMVECTOR addGravity = XMVectorSet(0.0f, -30 * DeltaTimeF, 0.0f, 0.0f);
+	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);

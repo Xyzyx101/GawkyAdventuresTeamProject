@@ -11,6 +11,11 @@
 
 namespace Vertex
 {
+	enum VERTEX_TYPE {
+		BASIC_32,
+		POS_NORMAL_TEX_TAN,
+	};
+	
 	// Basic 32-byte vertex structure.
 	struct Basic32
 	{
@@ -21,7 +26,8 @@ namespace Vertex
 
 
 	// Basic 32-byte vertex structure.
-	struct Basicmodel
+	// Is this used anywhere ????
+	/*struct Basicmodel
 	{
 		Basicmodel(){}
 		Basicmodel(float x, float y, float z,
@@ -34,7 +40,7 @@ namespace Vertex
 		XMFLOAT3 Pos;	
 		XMFLOAT2 Tex;
 		XMFLOAT3 Normal;
-	};
+	};*/
 
 	struct PosNormalTexTan
 	{
