@@ -50,7 +50,14 @@ namespace Vertex
 		XMFLOAT4 TangentU;
 	};
 
-
+	struct PosNormalTexTanSkinned {
+		XMFLOAT3 Pos;
+		XMFLOAT3 Normal;
+		XMFLOAT2 Tex;
+		XMFLOAT4 TangentU;
+		XMFLOAT3 Weights;
+		BYTE BoneIndices[4];
+	};
 
 
 
@@ -67,7 +74,7 @@ public:
 	static const D3D11_INPUT_ELEMENT_DESC InstancedBasic32[8];
 
 	static const D3D11_INPUT_ELEMENT_DESC PosNormalTexTan[4];
-
+	static const D3D11_INPUT_ELEMENT_DESC PosNormalTexTanSkinned[6];
 };
 
 class InputLayouts
@@ -79,8 +86,8 @@ public:
 	static ID3D11InputLayout* Pos;
 	static ID3D11InputLayout* Basic32;
 	static ID3D11InputLayout* InstancedBasic32;
-
 	static ID3D11InputLayout* PosNormalTexTan;
+	static ID3D11InputLayout* PosNormalTexTanSkinned;
 };
 
 #endif // VERTEX_H

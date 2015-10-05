@@ -124,7 +124,58 @@ public:
 };
 #pragma endregion
 
+#pragma region GawkyEffect
+class GawkyEffect : public Effect {
+public:
+	GawkyEffect( ID3D11Device* device, const std::wstring& filename );
+	~GawkyEffect();
 
+	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldInvTranspose( CXMMATRIX M ) { WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetTexTransform( CXMMATRIX M ) { TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetPointLights( const PointLight* lights ) { PLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+
+	void SetMaterial( const Material& mat ) { Mat->SetRawValue( &mat, 0, sizeof( Material ) ); }
+	void SetDiffuseMap( ID3D11ShaderResourceView* tex ) { DiffuseMap->SetResource( tex ); }
+	void SetCubeMap( ID3D11ShaderResourceView* tex ) { CubeMap->SetResource( tex ); }
+
+	ID3DX11EffectTechnique* Light0TexTech;
+	ID3DX11EffectTechnique* Light1TexTech;
+	ID3DX11EffectTechnique* Light2TexTech;
+	ID3DX11EffectTechnique* Light3TexTech;
+
+	ID3DX11EffectTechnique* Light1ReflectTech;
+	ID3DX11EffectTechnique* Light2ReflectTech;
+	ID3DX11EffectTechnique* Light3ReflectTech;
+
+	ID3DX11EffectTechnique* Light0TexReflectTech;
+	ID3DX11EffectTechnique* Light1TexReflectTech;
+	ID3DX11EffectTechnique* Light2TexReflectTech;
+	ID3DX11EffectTechnique* Light3TexReflectTech;
+
+	ID3DX11EffectTechnique* Light0TexSkinnedTech;
+	ID3DX11EffectTechnique* Light1TexSkinnedTech;
+	ID3DX11EffectTechnique* Light2TexSkinnedTech;
+	ID3DX11EffectTechnique* Light3TexSkinnedTech;
+
+	ID3DX11EffectMatrixVariable* WorldViewProj;
+	ID3DX11EffectMatrixVariable* WorldViewProjTex;
+	ID3DX11EffectMatrixVariable* World;
+	ID3DX11EffectMatrixVariable* WorldInvTranspose;
+	ID3DX11EffectMatrixVariable* TexTransform;
+	ID3DX11EffectVectorVariable* EyePosW;
+
+	ID3DX11EffectVariable* DirLights;
+	ID3DX11EffectVariable* PLights;
+	ID3DX11EffectVariable* Mat;
+
+	ID3DX11EffectShaderResourceVariable* DiffuseMap;
+	ID3DX11EffectShaderResourceVariable* CubeMap;
+};
 
 
 #pragma region NormalMapEffect
@@ -231,29 +282,6 @@ public:
 };
 #pragma endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #pragma region InstancedBasicEffect
 class InstancedBasicEffect : public Effect
 {
@@ -334,17 +362,6 @@ public:
 };
 #pragma endregion
 
-
-
-
-
-
-
-
-
-
-
-
 #pragma region Effects
 class Effects
 {
@@ -355,8 +372,8 @@ public:
 	static BasicEffect* BasicFX;
 	static SkyEffect* SkyFX;
 	static InstancedBasicEffect* InstanceFX;
-
 	static NormalMapEffect* NormalMapFX;
+	static GawkyEffect* GawkyFX;
 };
 #pragma endregion
 

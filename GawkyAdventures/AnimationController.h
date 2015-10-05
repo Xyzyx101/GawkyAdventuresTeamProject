@@ -23,10 +23,12 @@ public:
 	void AddAnim( Anim* anim );
 	void ChangeAnim( ANIM_NAME anim );
 	void Interpolate( float dt );
+	XMFLOAT4X4 GetBoneTransform( Bone* bone );
 private:
 	float							timeSinceStart;
 	Anim*							anims[_ANIM_COUNT];
 	ANIM_NAME						currentAnim;
+	std::map<Bone*, XMFLOAT4X4>		boneTransforms;
 };
 
 typedef std::map<float, XMFLOAT4> keySet_t; // map< time in sec, position vector or rotQuat or scale vector >

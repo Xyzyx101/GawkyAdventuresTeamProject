@@ -95,6 +95,8 @@ bool Player::init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr
 		return false;
 	}
 	
+	skeleton.SetAnimationController( &animController );
+
 	// New AssImp changes
 	mDiffuseSRV = texMgr.CreateTexture( texturePath+L"Gawky2_diffuse_color.png" );
 	mMaterial.Ambient = XMFLOAT4( 0.2f, 0.2f, 0.2f, 1.f );
@@ -205,6 +207,8 @@ void Player::drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTe
 		
 	}*/
 	
+	skeleton.SetRootTransform( mPlayer.World );
+
 	// Assimp Draw
 	Effects::BasicFX->SetMaterial( mMaterial );
 	Effects::BasicFX->SetDiffuseMap( mDiffuseSRV );
