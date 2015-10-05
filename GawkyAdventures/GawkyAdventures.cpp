@@ -446,34 +446,34 @@ void Game::DrawScene()
 	mCam.UpdateViewMatrix();
 
 	// Set per frame constants.
-	Effects::BasicFX->SetDirLights(mDirLights);
-	Effects::BasicFX->SetEyePosW(mCam.GetPosition());
-	Effects::BasicFX->SetCubeMap(mSky->CubeMapSRV());
+	Effects::GawkyFX->SetDirLights(mDirLights);
+	Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
+	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
 	
 
 	// Figure out which technique to use.  Skull does not have texture coordinates,
 	// so we need a separate technique for it, and not every surface is reflective,
 	// so don't pay for cubemap look up.
 
-	ID3DX11EffectTechnique* activeTexTech = Effects::BasicFX->Light1TexTech;
-	ID3DX11EffectTechnique* activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-	ID3DX11EffectTechnique* activeSkullTech = Effects::BasicFX->Light1ReflectTech;
+	ID3DX11EffectTechnique* activeTexTech = Effects::GawkyFX->Light1TexTech;
+	ID3DX11EffectTechnique* activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
+	ID3DX11EffectTechnique* activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
 	switch (mLightCount)
 	{
 	case 1:
-		activeTexTech = Effects::BasicFX->Light1TexTech;
-		activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light1ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light1TexTech;
+		activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
 		break;
 	case 2:
-		activeTexTech = Effects::BasicFX->Light2TexTech;
-		activeReflectTech = Effects::BasicFX->Light2TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light2ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light2TexTech;
+		activeReflectTech = Effects::GawkyFX->Light2TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light2ReflectTech;
 		break;
 	case 3:
-		activeTexTech = Effects::BasicFX->Light3TexTech;
-		activeReflectTech = Effects::BasicFX->Light3TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light3ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light3TexTech;
+		activeReflectTech = Effects::GawkyFX->Light3TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light3ReflectTech;
 		break;
 	}
 

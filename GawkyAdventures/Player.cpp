@@ -190,11 +190,11 @@ void Player::drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTe
 	world = XMLoadFloat4x4(&mPlayer.World);
 	worldInvTranspose = MathHelper::InverseTranspose(world);
 	worldViewProj = world*view*proj;
-	Effects::BasicFX->SetWorld(world);
-	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-	Effects::BasicFX->SetWorldViewProj(worldViewProj);
+	Effects::GawkyFX->SetWorld(world);
+	Effects::GawkyFX->SetWorldInvTranspose(worldInvTranspose);
+	Effects::GawkyFX->SetWorldViewProj(worldViewProj);
 	
-	Effects::BasicFX->SetTexTransform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
+	Effects::GawkyFX->SetTexTransform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
 
 	//Old Draw
 	/*for (UINT subset = 0; subset < mPlayer.Model->SubsetCount; ++subset)
@@ -210,8 +210,8 @@ void Player::drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTe
 	skeleton.SetRootTransform( mPlayer.World );
 
 	// Assimp Draw
-	Effects::BasicFX->SetMaterial( mMaterial );
-	Effects::BasicFX->SetDiffuseMap( mDiffuseSRV );
+	Effects::GawkyFX->SetMaterial( mMaterial );
+	Effects::GawkyFX->SetDiffuseMap( mDiffuseSRV );
 	activeTexTech->GetPassByIndex( 0 )->Apply( 0, dc );
 	UINT offset = 0;
 	UINT stride = mModel.VertexStride();
