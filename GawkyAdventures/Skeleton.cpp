@@ -9,9 +9,9 @@ numBones( 0 ) {
 	directly from the modeling package.  The rotation correction seems to be on a node 
 	that is the child of the root node in the assimp scene but I could not figure out 
 	how to use it or turn it off.  */
-	XMMATRIX rotX = XMMatrixRotationX( ((168.92) * (XM_PI/180.0f)) );
-	XMMATRIX rotY = XMMatrixRotationY( ((25.1565) * (XM_PI/180.0f)) );
-	XMMATRIX rotZ = XMMatrixRotationZ( ((90.4255) * (XM_PI/180.0f)) );
+	XMMATRIX rotX = XMMatrixRotationX( ((0.f) * (XM_PI/180.0f)) );
+	XMMATRIX rotY = XMMatrixRotationY( ((3.2664f) * (XM_PI/180.0f)) );
+	XMMATRIX rotZ = XMMatrixRotationZ( ((0.f) * (XM_PI/180.0f)) );
 	XMMATRIX correctionMatrix = rotX*rotY*rotZ;
 	XMStoreFloat4x4( &rootCorrection, correctionMatrix );
 }

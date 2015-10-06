@@ -2,8 +2,9 @@
 #include<map>
 #include<unordered_set>
 #include "d3dUtil.h"
+#include "Skeleton.h"
 
-struct Bone;
+//struct Bone;
 
 enum ANIM_NAME {
 	ANIM_TEST,
@@ -35,9 +36,9 @@ typedef std::map<float, XMFLOAT4> keySet_t; // map< time in sec, position vector
 
 struct Anim {
 public:
-	std::unordered_set<Bone*>		boneSet;
-	std::string						name;
-	float							totalTime;
+	std::unordered_set<Bone*>						boneSet;
+	std::string										name;
+	float											totalTime;
 	std::map<Bone*, keySet_t>		rotChannels;
 	std::map<Bone*, keySet_t>		posChannels;
 	std::map<Bone*, keySet_t>		scaleChannels;

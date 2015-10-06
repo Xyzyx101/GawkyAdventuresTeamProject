@@ -176,10 +176,10 @@ void ModelLoader::CreateVertexBuffer( Vertex::VERTEX_TYPE type ) {
 			auto itup = vertexBoneWeight.upper_bound( i );
 			assert( itlow!=itup ); // every vertex should have some influence
 			for( auto it = itlow; it!=itup; ++it ) {
-				if( j>=3 ) {
+				boneIndices[j] = it->second.boneIndex;
+				if( j>2 ) {
 					break;
 				}
-				boneIndices[j] = it->second.boneIndex;
 				weights[j] = it->second.weight;
 				++j;
 			}
@@ -266,6 +266,9 @@ void ModelLoader::CreateAnimations() {
 		for( int j = 0; j<aiAnim->mNumChannels; ++j ) {
 			aiNodeAnim* aiNodeAnim = aiAnim->mChannels[j];
 			Bone* bone = skeleton->GetBoneByName( aiNodeAnim->mNodeName.C_Str() );
+			if( bone==nullptr ) {
+				continue;
+			}
 			anim->boneSet.insert( bone );
 
 			keySet_t rotKeySet;
