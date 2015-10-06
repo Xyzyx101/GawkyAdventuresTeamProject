@@ -283,6 +283,8 @@ GawkyEffect::GawkyEffect( ID3D11Device* device, const std::wstring& filename )
 	TexTransform = mFX->GetVariableByName( "gTexTransform" )->AsMatrix();
 	EyePosW = mFX->GetVariableByName( "gEyePosW" )->AsVector();
 	
+	BoneTransforms = mFX->GetVariableByName( "gBoneTransforms" )->AsMatrix();
+
 	DirLights = mFX->GetVariableByName( "gDirLights" );
 	PLights = mFX->GetVariableByName( "gPLights" );
 	Mat = mFX->GetVariableByName( "gMaterial" );

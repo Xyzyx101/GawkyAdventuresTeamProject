@@ -7,7 +7,7 @@ AnimationController::~AnimationController() {}
 
 void AnimationController::AddAnim( Anim* anim ) {
 	std::string name = anim->name;
-	if( name=="Test" ) {
+	if( name=="Test48" ) {
 		anims[ANIM_TEST] = anim;
 	} else if( name=="Idle" ) {
 		anims[ANIM_IDLE] = anim;
@@ -21,7 +21,6 @@ void AnimationController::AddAnim( Anim* anim ) {
 		fprintf( stderr, "Bad Animation name : %s", name );
 	}
 }
-
 
 void AnimationController::ChangeAnim( ANIM_NAME newAnim ) {
 	if( currentAnim==newAnim ) {
@@ -53,7 +52,12 @@ void AnimationController::Interpolate( float dt ) {
 			if( itHigh==rotKeySet.end() ) {
 				itHigh = rotKeySet.begin();
 			}
-			float factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			float factor;
+			if( itLow==itHigh ) {
+				factor = 0.f;
+			} else {
+				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			}
 			XMVECTOR low = XMLoadFloat4( &itLow->second );
 			XMVECTOR high = XMLoadFloat4( &itHigh->second );
 			XMVECTOR interp = XMQuaternionSlerp( low, high, factor );
@@ -76,7 +80,12 @@ void AnimationController::Interpolate( float dt ) {
 			if( itHigh==scaleKeySet.end() ) {
 				itHigh = scaleKeySet.begin();
 			}
-			float factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			float factor;
+			if( itLow==itHigh ) {
+				factor = 0.f;
+			} else {
+				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			}
 			XMFLOAT4 lowVec = itLow->second;
 			XMFLOAT4 highVec = itHigh->second;
 			scaleMat = XMMatrixScaling(
@@ -100,7 +109,12 @@ void AnimationController::Interpolate( float dt ) {
 			if( itHigh==posKeySet.end() ) {
 				itHigh = posKeySet.begin();
 			}
-			float factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			float factor;
+			if( itLow==itHigh ) {
+				factor = 0.f;
+			} else {
+				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+			}
 			XMFLOAT4 lowVec = itLow->second;
 			XMFLOAT4 highVec = itHigh->second;
 			translateMat = XMMatrixTranslation(

@@ -1,4 +1,5 @@
 #include "ModelLoader.h"
+#include <map>
 #include "assimp\DefaultLogger.hpp"
 #include "Skeleton.h"
 #include "AnimationController.h"
@@ -70,9 +71,15 @@ bool ModelLoader::Load( ID3D11Device* device, const std::string& filename, Verte
 		outModel.SetVertexStride( sizeof( Vertex::PosNormalTexTan ) );
 		break;
 	}
+	case Vertex::POS_NORMAL_TEX_TAN_SKINNED:
+	{
+		outModel.SetVertexStride( sizeof( Vertex::PosNormalTexTanSkinned ) );
+		break;
+	}
 	default:
 		assert( false ); // this should never happen
 	}
+	return true;
 }
 
 void ModelLoader::CreateIndexBuffer() {
@@ -138,6 +145,54 @@ void ModelLoader::CreateVertexBuffer( Vertex::VERTEX_TYPE type ) {
 		SetVertices( device, count, vertData.data() );
 		break;
 	}
+	case Vertex::POS_NORMAL_TEX_TAN_SKINNED:
+	{
+		aiVector3D* normals = mesh->mNormals;
+		aiVector3D* texCoords = mesh->mTextureCoords[0];
+		aiVector3D* tangents = mesh->mTangents;
+		std::vector<Vertex::PosNormalTexTanSkinned> vertData( count );
+		for( UINT i = 0; i<count; ++i ) {
+			UpdateExtents( vertices[i].x, vertices[i].y, vertices[i].z );
+			vertData[i].Pos = XMFLOAT3( vertices[i].x, vertices[i].y, vertices[i].z );
+			vertData[i].Normal = XMFLOAT3( normals[i].x, normals[i].y, normals[i].z );
+			vertData[i].Tex = XMFLOAT2( texCoords[i].x, texCoords[i].y );
+			vertData[i].TangentU = XMFLOAT4( tangents[i].x, tangents[i].y, tangents[i].z, 0.f );
+		}
+
+		// Bone Data
+		std::multimap<int, BoneWeight> vertexBoneWeight;
+		for( unsigned int boneIndex = 0; boneIndex<mesh->mNumBones; ++boneIndex ) {
+			auto bone = mesh->mBones[boneIndex];
+			for( int i = 0; i<bone->mNumWeights; ++i ) {
+				auto boneWeight = BoneWeight( boneIndex, bone->mWeights[i].mWeight );
+				vertexBoneWeight.insert( std::pair<int, BoneWeight>( bone->mWeights[i].mVertexId, boneWeight ) );
+			}
+		}
+		for( UINT i = 0; i<count; ++i ) {
+			BYTE boneIndices[4] = { 0, 0, 0, 0 };
+			float weights[3] = { 0, 0, 0 };
+			int j = 0;
+			auto itlow = vertexBoneWeight.lower_bound( i );
+			auto itup = vertexBoneWeight.upper_bound( i );
+			assert( itlow!=itup ); // every vertex should have some influence
+			for( auto it = itlow; it!=itup; ++it ) {
+				if( j>=3 ) {
+					break;
+				}
+				boneIndices[j] = it->second.boneIndex;
+				weights[j] = it->second.weight;
+				++j;
+			}
+			vertData[i].BoneIndicies[0] = boneIndices[0];
+			vertData[i].BoneIndicies[1] = boneIndices[1];
+			vertData[i].BoneIndicies[2] = boneIndices[2];
+			//vertData[i].BoneIndicies[3] = boneIndices[3];
+			vertData[i].Weights = XMFLOAT3( weights );
+		}
+
+		SetVertices( device, count, vertData.data() );
+		break;
+	}
 	}
 }
 
@@ -159,6 +214,16 @@ void ModelLoader::CreateSkeleton() {
 
 void ModelLoader::CreateBoneHierarchy() {
 	aiNode* root = scene->mRootNode->FindNode( "Skeleton_Root" );
+	Bone* bone = skeleton->GetBoneByName( root->mName.data );
+	if( bone==nullptr ) {
+		bone = new Bone();
+		bone->idx = skeleton->BoneCount();
+		bone->name = root->mName.data;
+		XMMATRIX mat = XMMatrixIdentity();
+		XMStoreFloat4x4( &(bone->offset), mat );
+		XMStoreFloat4x4( &(bone->localTransform), mat );
+		skeleton->AddBone( bone );
+	}
 	assert( root!=nullptr ); // The root bone must be called Skeleton_Root
 	FindBoneChildren( root, -1 );
 }
@@ -166,7 +231,8 @@ void ModelLoader::CreateBoneHierarchy() {
 void ModelLoader::FindBoneChildren( aiNode* node, int parentIdx ) {
 	Bone* bone = skeleton->GetBoneByName( node->mName.data );
 	bone->parentIdx = parentIdx;
-	XMMATRIX transformMat = ConvertMatrix( node->mTransformation );
+	XMMATRIX transformMat;
+	transformMat = ConvertMatrix( node->mTransformation );
 	XMStoreFloat4x4( &(bone->localTransform), transformMat);
 	if( node->mNumChildren==0 ) { return; }
 	for( int i = 0; i<node->mNumChildren; ++i ) {
@@ -260,4 +326,17 @@ XMMATRIX ModelLoader::ConvertMatrix( aiMatrix4x4 inMat ) {
 		inMat.a2, inMat.b2, inMat.c2, inMat.d2,
 		inMat.a3, inMat.b3, inMat.c3, inMat.d3,
 		inMat.a4, inMat.b4, inMat.c4, inMat.d4 ) );
+}
+
+XMMATRIX ModelLoader::ConvertFBXtoDXMatrix( aiMatrix4x4 inMat ) {
+	// aiMatrix is transposed
+	XMMATRIX xmInMat = XMLoadFloat4x4( &XMFLOAT4X4(
+		inMat.a1, inMat.b1, inMat.c1, inMat.d1,
+		inMat.a2, inMat.b2, inMat.c2, inMat.d2,
+		inMat.a3, inMat.b3, inMat.c3, inMat.d3,
+		inMat.a4, inMat.b4, inMat.c4, inMat.d4 ) );
+	XMVECTOR translate, scale, rotQuat;
+	XMMatrixDecompose( &scale, &rotQuat, &translate, xmInMat );
+	scale = scale*100;
+	return nullptr;
 }

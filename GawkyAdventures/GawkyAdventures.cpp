@@ -1,4 +1,5 @@
 #include "d3dApp.h"
+#include <stdio.h>
 #include "d3dx11Effect.h"
 #include "GeometryGenerator.h"
 #include "MathHelper.h"
@@ -177,7 +178,12 @@ bool Game::Init(HINSTANCE hInstance)
 	/// create the player
 	PlayerOne = new Player(md3dDevice, mTexMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
 	ModelLoader* modelLoader = new ModelLoader();
-	PlayerOne->init( md3dDevice, modelLoader, mTexMgr, L"Textures\\" );
+	if( !PlayerOne->init( md3dDevice, modelLoader, mTexMgr, L"Textures\\" ) ) {
+		wchar_t msgbuf[256];
+		wsprintf( msgbuf, L"\nPlayer Init Failed!!!\n\n");
+		OutputDebugString( msgbuf );
+		return false;
+	}
 
 	//// load  the level models
 	theEnemies = new Enemies(md3dDevice, mTexMgr);
@@ -458,22 +464,26 @@ void Game::DrawScene()
 	ID3DX11EffectTechnique* activeTexTech = Effects::GawkyFX->Light1TexTech;
 	ID3DX11EffectTechnique* activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
 	ID3DX11EffectTechnique* activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
+	ID3DX11EffectTechnique* activeSkinnedTech = Effects::GawkyFX->Light1TexSkinnedTech;
 	switch (mLightCount)
 	{
 	case 1:
 		activeTexTech = Effects::GawkyFX->Light1TexTech;
 		activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
 		activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light1TexSkinnedTech;
 		break;
 	case 2:
 		activeTexTech = Effects::GawkyFX->Light2TexTech;
 		activeReflectTech = Effects::GawkyFX->Light2TexReflectTech;
 		activeSkullTech = Effects::GawkyFX->Light2ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light2TexSkinnedTech;
 		break;
 	case 3:
 		activeTexTech = Effects::GawkyFX->Light3TexTech;
 		activeReflectTech = Effects::GawkyFX->Light3TexReflectTech;
 		activeSkullTech = Effects::GawkyFX->Light3ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light3TexSkinnedTech;
 		break;
 	}
 
@@ -486,7 +496,8 @@ void Game::DrawScene()
 	Level1->draw(md3dImmediateContext, mCam, activeTexTech);
 
 	//draw player
-	PlayerOne->drawPlayer(md3dImmediateContext, mCam, activeTexTech);
+	md3dImmediateContext->IASetInputLayout( InputLayouts::PosNormalTexTanSkinned );
+	PlayerOne->drawPlayer( md3dImmediateContext, mCam, activeSkinnedTech );
 
 	////////////////////////////////////////
 	mSky->Draw(md3dImmediateContext, mCam);

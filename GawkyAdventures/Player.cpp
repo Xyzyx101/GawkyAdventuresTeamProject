@@ -91,11 +91,12 @@ Player::~Player()
 {}
 
 bool Player::init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr, const std::wstring& texturePath ) {
-	if( !loader->Load( device, "./Models/gawky2.fbx", Vertex::BASIC_32, mModel, &skeleton, &animController ) ) {
+	if( !loader->Load( device, "./Models/gawky2_0002.fbx", Vertex::POS_NORMAL_TEX_TAN_SKINNED, mModel, &skeleton, &animController ) ) {
 		return false;
 	}
 	
 	skeleton.SetAnimationController( &animController );
+	animController.ChangeAnim( ANIM_NAME::ANIM_TEST );
 
 	// New AssImp changes
 	mDiffuseSRV = texMgr.CreateTexture( texturePath+L"Gawky2_diffuse_color.png" );
@@ -212,6 +213,9 @@ void Player::drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTe
 	// Assimp Draw
 	Effects::GawkyFX->SetMaterial( mMaterial );
 	Effects::GawkyFX->SetDiffuseMap( mDiffuseSRV );
+
+	Effects::GawkyFX->SetBoneTransforms( skeleton.GetBoneTransforms(), skeleton.BoneCount() );
+
 	activeTexTech->GetPassByIndex( 0 )->Apply( 0, dc );
 	UINT offset = 0;
 	UINT stride = mModel.VertexStride();
@@ -623,6 +627,7 @@ void Player::move(float dt, XMVECTOR direction, Enemies* guys, TheObjects* thing
 			fellOffMap = true;
 		}
 	}
+	animController.Interpolate( dt );
 }
 
 ////getters

@@ -3,6 +3,8 @@
 #include <map>
 #include "d3dUtil.h"
 
+#define MAX_BONE_COUNT 64
+
 class AnimationController;
 
 __declspec(align(16)) struct Bone {
@@ -20,18 +22,19 @@ public:
 	~Skeleton();
 	void SetRootTransform( XMFLOAT4X4& transform );
 	void SetAnimationController( AnimationController* animController );
-	XMFLOAT4X4* GetFinalTransforms();
+	XMFLOAT4X4* GetBoneTransforms();
 	Bone* GetBoneByIndex( int index );
 	Bone* GetBoneByName( std::string name );
 	void AddBone( Bone* newBone );
 	int BoneCount();
 private:
 	void UpdateTransforms( Bone* bone );
-	XMFLOAT4X4*						rootTransform;
+	XMFLOAT4X4*							rootTransform;
+	XMFLOAT4X4							rootCorrection;
 	int									numBones;
 	std::map<int, Bone*>				idxBones;
 	std::map<std::string, Bone*>		nameBones;
-	std::vector<XMFLOAT4X4>				toRoot;
-	XMFLOAT4X4							finalTransformData[64];
+	XMFLOAT4X4							toRoot[MAX_BONE_COUNT];
+	XMFLOAT4X4							finalTransformData[MAX_BONE_COUNT];
 	AnimationController*				animationController;
 };

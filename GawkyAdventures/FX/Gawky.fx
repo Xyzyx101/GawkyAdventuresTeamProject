@@ -25,13 +25,12 @@ cbuffer cbPerObject
 	float4x4 gWorldViewProj;
 	float4x4 gTexTransform;
 	Material gMaterial;
-
-	//XMFLOAT4 difColor;
-	//bool hasTexture;
-	
-
-	
 }; 
+
+cbuffer cbSkinned 
+{
+	float4x4 gBoneTransforms[64];
+};
 
 // Nonnumeric values cannot be added to a cbuffer.
 Texture2D gDiffuseMap;
@@ -53,12 +52,23 @@ struct VertexIn
 	float2 Tex     : TEXCOORD;
 };
 
+struct SkinnedVertexIn 
+{
+	float3 PosL			: POSITION;
+	float3 NormalL		: NORMAL;
+	float2 Tex			: TEXCOORD;
+	float4 TangentL		: TANGENT;
+	float3 Weights		: WEIGHTS;
+	uint4  BoneIndices	: BONEINDICES;
+};
+
 struct VertexOut
 {
 	float4 PosH    : SV_POSITION;
     float3 PosW    : POSITION;
     float3 NormalW : NORMAL;
 	float2 Tex     : TEXCOORD;
+	float4 Debug   : COLOR1;
 };
 
 VertexOut VS(VertexIn vin)
@@ -75,9 +85,51 @@ VertexOut VS(VertexIn vin)
 	// Output vertex attributes for interpolation across triangle.
 	vout.Tex = mul(float4(vin.Tex, 0.0f, 1.0f), gTexTransform).xy;
 
+	vout.Debug = float4(0.f, 0.f, 0.f, 1.f);
+
 	return vout;
 }
  
+VertexOut SkinnedVS( SkinnedVertexIn vin ) 
+{
+	VertexOut vout;
+
+	// Init array or else we get strange warnings about SV_POSITION.
+	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.Weights.x;
+	weights[1] = vin.Weights.y;
+	weights[2] = vin.Weights.z;
+	weights[3] = 1.0f-weights[0]-weights[1]-weights[2];
+
+	vin.NormalL = normalize( vin.NormalL.xyz );
+
+	float3 posL = float3(0.0f, 0.0f, 0.0f);
+	float3 normalL = float3(0.0f, 0.0f, 0.0f);
+	float3 tangentL = float3(0.0f, 0.0f, 0.0f);
+	for( int i = 0; i < 4; ++i ) {
+		// Assume no nonuniform scaling when transforming normals, so 
+		// that we do not have to use the inverse-transpose.
+
+		posL += weights[i]*mul( float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]] ).xyz;
+		normalL += weights[i]*mul( vin.NormalL, (float3x3)gBoneTransforms[vin.BoneIndices[i]] );
+		tangentL += weights[i]*mul( vin.TangentL.xyz, (float3x3)gBoneTransforms[vin.BoneIndices[i]] );
+	}
+
+	// Transform to world space space.
+	vout.PosW = mul( float4(posL, 1.0f), gWorld ).xyz;
+	vout.NormalW = mul( normalL, (float3x3)gWorldInvTranspose );
+	
+	// Transform to homogeneous clip space.
+	vout.PosH = mul( float4(posL, 1.0f), gWorldViewProj );
+
+	// Output vertex attributes for interpolation across triangle.
+	vout.Tex = mul( float4(vin.Tex, 0.0f, 1.0f), gTexTransform ).xy;
+
+	vout.Debug = float4(vout.PosW, 0.f);//float4(gBoneTransforms[4]._m30, gBoneTransforms[4]._m31, gBoneTransforms[4]._m32, 1.f);
+
+	return vout;
+}
+
 float4 PS(VertexOut pin, 
           uniform int gLightCount, 
 		  uniform bool gUseTexure, 
@@ -165,6 +217,7 @@ float4 PS(VertexOut pin,
 	// Common to take alpha from diffuse material and texture.
 	litColor.a = gMaterial.Diffuse.a * texColor.a;
 
+	//return pin.Debug;
     return litColor;
 }
 
@@ -310,7 +363,7 @@ technique11 Light3TexReflect
 
 technique11 Light0TexSkinned {
 	pass P0 {
-		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader(ps_5_0, PS( 0, true, false, false, false )) );
 	}
@@ -318,7 +371,7 @@ technique11 Light0TexSkinned {
 
 technique11 Light1TexSkinned {
 	pass P0 {
-		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader(ps_5_0, PS( 1, true, false, false, false )) );
 	}
@@ -326,7 +379,7 @@ technique11 Light1TexSkinned {
 
 technique11 Light2TexSkinned {
 	pass P0 {
-		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader(ps_5_0, PS( 2, true, false, false, false )) );
 	}
@@ -334,7 +387,7 @@ technique11 Light2TexSkinned {
 
 technique11 Light3TexSkinned {
 	pass P0 {
-		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
 		SetPixelShader( CompileShader(ps_5_0, PS( 3, true, false, false, false )) );
 	}

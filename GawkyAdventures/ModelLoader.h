@@ -28,6 +28,7 @@ private:
 	//void FindBoneChildren( aiNode* node, int parentIdx );
 	inline void UpdateExtents( float x, float y, float z );
 	XMMATRIX ConvertMatrix( aiMatrix4x4 inMat );
+	XMMATRIX ConvertFBXtoDXMatrix( aiMatrix4x4 inMat );
 	ID3D11Device*			device;
 	const aiScene*			scene;
 	UINT					indexCount;

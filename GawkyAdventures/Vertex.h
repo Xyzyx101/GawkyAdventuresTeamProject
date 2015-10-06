@@ -14,6 +14,7 @@ namespace Vertex
 	enum VERTEX_TYPE {
 		BASIC_32,
 		POS_NORMAL_TEX_TAN,
+		POS_NORMAL_TEX_TAN_SKINNED
 	};
 	
 	// Basic 32-byte vertex structure.
@@ -56,12 +57,8 @@ namespace Vertex
 		XMFLOAT2 Tex;
 		XMFLOAT4 TangentU;
 		XMFLOAT3 Weights;
-		BYTE BoneIndices[4];
+		BYTE	 BoneIndicies[4];
 	};
-
-
-
-
 }
 
 class InputLayoutDesc

@@ -2,7 +2,19 @@
 #include "AnimationController.h"
 
 Skeleton::Skeleton() :
-numBones( 0 ) {}
+numBones( 0 ) {
+	/* This fix is kinda crappy.  AssImp has some kind of correction factor that forces
+	the first bone with weights to be rotated to the identity matrix.  It means that no 
+	matter how you rotate the model it will always be wrong.  These numbers are taken 
+	directly from the modeling package.  The rotation correction seems to be on a node 
+	that is the child of the root node in the assimp scene but I could not figure out 
+	how to use it or turn it off.  */
+	XMMATRIX rotX = XMMatrixRotationX( ((168.92) * (XM_PI/180.0f)) );
+	XMMATRIX rotY = XMMatrixRotationY( ((25.1565) * (XM_PI/180.0f)) );
+	XMMATRIX rotZ = XMMatrixRotationZ( ((90.4255) * (XM_PI/180.0f)) );
+	XMMATRIX correctionMatrix = rotX*rotY*rotZ;
+	XMStoreFloat4x4( &rootCorrection, correctionMatrix );
+}
 
 Skeleton::~Skeleton() {}
 
@@ -40,7 +52,7 @@ Bone* Skeleton::GetBoneByIndex( int index ) {
 	return indexIt->second;
 }
 
-XMFLOAT4X4* Skeleton::GetFinalTransforms() {
+XMFLOAT4X4* Skeleton::GetBoneTransforms() {
 	for( auto it:nameBones ) {
 		Bone* bone = it.second;
 		bone->localTransform = animationController->GetBoneTransform( bone );
@@ -54,9 +66,10 @@ void Skeleton::UpdateTransforms( Bone* bone ) {
 	XMMATRIX localTransform = XMLoadFloat4x4( &(bone->localTransform) );
 	XMMATRIX offset = XMLoadFloat4x4( &(bone->offset) );
 	XMMATRIX finalTransform;
-	if( bone->parentIdx = -1 ) {
+	if( bone->parentIdx == -1 ) {
 		// The root bone
-		XMStoreFloat4x4( &(toRoot[bone->idx]), localTransform );
+		XMMATRIX xmRootCorrection = XMLoadFloat4x4( &rootCorrection );
+		XMStoreFloat4x4( &(toRoot[bone->idx]), xmRootCorrection*localTransform );
 		finalTransform = offset*localTransform;
 	} else {
 		XMMATRIX parentToRoot = XMLoadFloat4x4( &(toRoot[bone->parentIdx]) );
