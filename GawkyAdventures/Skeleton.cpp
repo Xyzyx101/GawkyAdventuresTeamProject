@@ -10,7 +10,7 @@ numBones( 0 ) {
 	that is the child of the root node in the assimp scene but I could not figure out 
 	how to use it or turn it off.  */
 	XMMATRIX rotX = XMMatrixRotationX( ((0.f) * (XM_PI/180.0f)) );
-	XMMATRIX rotY = XMMatrixRotationY( ((3.2664f) * (XM_PI/180.0f)) );
+	XMMATRIX rotY = XMMatrixRotationY( ((0.f) * (XM_PI/180.0f)) );
 	XMMATRIX rotZ = XMMatrixRotationZ( ((0.f) * (XM_PI/180.0f)) );
 	XMMATRIX correctionMatrix = rotX*rotY*rotZ;
 	XMStoreFloat4x4( &rootCorrection, correctionMatrix );
