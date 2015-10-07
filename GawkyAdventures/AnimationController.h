@@ -7,11 +7,12 @@
 //struct Bone;
 
 enum ANIM_NAME {
-	ANIM_TEST,
-	ANIM_IDLE,
-	ANIM_WALK,
-	ANIM_JUMP,
-	ANIM_ATTACK,
+	TEST,
+	IDLE,
+	WALK,
+	JUMP,
+	FALL,
+	TRIP,
 	_ANIM_COUNT
 };
 
@@ -32,14 +33,17 @@ private:
 	std::map<Bone*, XMFLOAT4X4>		boneTransforms;
 };
 
-typedef std::map<float, XMFLOAT4> keySet_t; // map< time in sec, position vector or rotQuat or scale vector >
+struct KeySet {
+	std::vector<float>		keyTime;	// time in sec
+	std::vector<XMFLOAT4>	value;		// position vector or rotQuat or scale vecto
+};
 
 struct Anim {
 public:
 	std::unordered_set<Bone*>						boneSet;
 	std::string										name;
 	float											totalTime;
-	std::map<Bone*, keySet_t>		rotChannels;
-	std::map<Bone*, keySet_t>		posChannels;
-	std::map<Bone*, keySet_t>		scaleChannels;
+	std::map<Bone*, KeySet>		rotChannels;
+	std::map<Bone*, KeySet>		posChannels;
+	std::map<Bone*, KeySet>		scaleChannels;
 };

@@ -170,24 +170,25 @@ void ModelLoader::CreateVertexBuffer( Vertex::VERTEX_TYPE type ) {
 		}
 		for( UINT i = 0; i<count; ++i ) {
 			BYTE boneIndices[4] = { 0, 0, 0, 0 };
-			float weights[3] = { 0, 0, 0 };
+			float weights[4] = { 0, 0, 0, 0 };
 			int j = 0;
 			auto itlow = vertexBoneWeight.lower_bound( i );
 			auto itup = vertexBoneWeight.upper_bound( i );
 			assert( itlow!=itup ); // every vertex should have some influence
 			for( auto it = itlow; it!=itup; ++it ) {
-				boneIndices[j] = it->second.boneIndex;
-				if( j>2 ) {
+				if( j>3 ) {
+					assert( false ); // only 4 boes should influence one vertex
 					break;
 				}
+				boneIndices[j] = it->second.boneIndex;
 				weights[j] = it->second.weight;
 				++j;
 			}
 			vertData[i].BoneIndicies[0] = boneIndices[0];
 			vertData[i].BoneIndicies[1] = boneIndices[1];
 			vertData[i].BoneIndicies[2] = boneIndices[2];
-			//vertData[i].BoneIndicies[3] = boneIndices[3];
-			vertData[i].Weights = XMFLOAT3( weights );
+			vertData[i].BoneIndicies[3] = boneIndices[3];
+			vertData[i].Weights = XMFLOAT4( weights );
 		}
 
 		SetVertices( device, count, vertData.data() );
@@ -233,7 +234,7 @@ void ModelLoader::FindBoneChildren( aiNode* node, int parentIdx ) {
 	bone->parentIdx = parentIdx;
 	XMMATRIX transformMat;
 	transformMat = ConvertMatrix( node->mTransformation );
-	XMStoreFloat4x4( &(bone->localTransform), transformMat);
+	XMStoreFloat4x4( &(bone->localTransform), transformMat );
 	if( node->mNumChildren==0 ) { return; }
 	for( int i = 0; i<node->mNumChildren; ++i ) {
 		aiNode* childNode = node->mChildren[i];
@@ -271,24 +272,27 @@ void ModelLoader::CreateAnimations() {
 			}
 			anim->boneSet.insert( bone );
 
-			keySet_t rotKeySet;
+			KeySet rotKeySet;
 			for( int k = 0; k<aiNodeAnim->mNumRotationKeys; ++k ) {
 				aiQuatKey quatKey = aiNodeAnim->mRotationKeys[k];
-				rotKeySet[(float)quatKey.mTime * timePerFrame] = XMFLOAT4( quatKey.mValue.x, quatKey.mValue.y, quatKey.mValue.z, quatKey.mValue.w );
+				rotKeySet.keyTime.push_back( (float)quatKey.mTime * timePerFrame );
+				rotKeySet.value.push_back( XMFLOAT4( quatKey.mValue.x, quatKey.mValue.y, quatKey.mValue.z, quatKey.mValue.w ) );
 			}
 			anim->rotChannels[bone] = rotKeySet;
 
-			keySet_t posKeySet;
+			KeySet posKeySet;
 			for( int m = 0; m<aiNodeAnim->mNumPositionKeys; ++m ) {
 				aiVectorKey posKey = aiNodeAnim->mPositionKeys[m];
-				posKeySet[(float)posKey.mTime * timePerFrame] = XMFLOAT4( posKey.mValue.x, posKey.mValue.y, posKey.mValue.z, 1.0f );
+				posKeySet.keyTime.push_back( (float)posKey.mTime * timePerFrame );
+				posKeySet.value.push_back( XMFLOAT4( posKey.mValue.x, posKey.mValue.y, posKey.mValue.z, 1.0f ) );
 			}
 			anim->posChannels[bone] = posKeySet;
 
-			keySet_t scaleKeySet;
+			KeySet scaleKeySet;
 			for( int n = 0; n<aiNodeAnim->mNumScalingKeys; ++n ) {
 				aiVectorKey scaleKey = aiNodeAnim->mScalingKeys[n];
-				scaleKeySet[(float)scaleKey.mTime* timePerFrame] = XMFLOAT4( scaleKey.mValue.x, scaleKey.mValue.y, scaleKey.mValue.z, 1.0f );
+				scaleKeySet.keyTime.push_back( (float)scaleKey.mTime* timePerFrame );
+				scaleKeySet.value.push_back( XMFLOAT4( scaleKey.mValue.x, scaleKey.mValue.y, scaleKey.mValue.z, 1.0f ) );
 			}
 			anim->scaleChannels[bone] = scaleKeySet;
 		}

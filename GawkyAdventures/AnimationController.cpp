@@ -8,15 +8,17 @@ AnimationController::~AnimationController() {}
 void AnimationController::AddAnim( Anim* anim ) {
 	std::string name = anim->name;
 	if( name=="Test48" ) {
-		anims[ANIM_TEST] = anim;
+		anims[ANIM_NAME::TEST] = anim;
 	} else if( name=="Idle" ) {
-		anims[ANIM_IDLE] = anim;
+		anims[ANIM_NAME::IDLE] = anim;
 	} else if( name=="Walk" ) {
-		anims[ANIM_WALK] = anim;
-	} else if( name=="Attack" ) {
-		anims[ANIM_ATTACK] = anim;
+		anims[ANIM_NAME::WALK] = anim;
 	} else if( name=="Jump" ) {
-		anims[ANIM_JUMP] = anim;
+		anims[ANIM_NAME::JUMP] = anim;
+	} else if( name=="Fall" ) {
+		anims[ANIM_NAME::FALL] = anim;
+	} else if( name=="Trip" ) {
+		anims[ANIM_NAME::TRIP] = anim;
 	} else {
 		fprintf( stderr, "Bad Animation name : %s", name );
 	}
@@ -36,33 +38,50 @@ void AnimationController::Interpolate( float dt ) {
 	float animCurrentTime = fmod( timeSinceStart, anim->totalTime );
 	for( Bone* bone:anim->boneSet ) {
 		XMMATRIX rotMat, scaleMat, translateMat;
-		
+
 		// Interpolate Rotation
 		auto rotSetIt = anim->rotChannels.find( bone );
 		if( rotSetIt==anim->rotChannels.end() ) {
 			rotMat = XMMatrixIdentity();
 		} else {
-			keySet_t rotKeySet = rotSetIt->second;
-			auto itLow = rotKeySet.lower_bound( animCurrentTime );
-			if( itLow==rotKeySet.begin() ) {
-				itLow = rotKeySet.end();
-			}
-			--itLow;
-			auto itHigh = rotKeySet.upper_bound( animCurrentTime );
-			if( itHigh==rotKeySet.end() ) {
-				itHigh = rotKeySet.begin();
-			}
-			float factor;
-			if( itLow==itHigh ) {
-				factor = 0.f;
+			if( rotSetIt->second.keyTime.size()==1 ) {
+				XMVECTOR quat = XMLoadFloat4( &(rotSetIt->second.value[0]) );
+				rotMat = XMMatrixRotationQuaternion( quat );
 			} else {
-				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+				int lowIdx = 1, highIdx = 1;
+				KeySet rotKeySet = rotSetIt->second;
+				auto itLow = rotKeySet.keyTime.cbegin()+1;
+				while( *itLow<animCurrentTime ) {
+					++itLow; ++lowIdx;
+					if( itLow==rotKeySet.keyTime.cend() ) {
+						break;
+					}
+				}
+				if( lowIdx==rotKeySet.keyTime.size() ) {
+					--lowIdx;
+					rotMat = XMMatrixRotationQuaternion( XMLoadFloat4( &rotKeySet.value[lowIdx] ) );
+				} else {
+					auto itHigh = itLow; highIdx = lowIdx;
+					--itLow; --lowIdx;
+					while( *itHigh<animCurrentTime ) {
+						++itHigh; ++highIdx;
+						if( itLow==rotKeySet.keyTime.cend() ) {
+							break;
+						}
+					}
+					float factor;
+					if( itLow==itHigh ) {
+						factor = 0.f;
+					} else {
+						factor = (animCurrentTime-*itLow)/(*itHigh-*itLow);
+					}
+					XMVECTOR low = XMLoadFloat4( &rotKeySet.value[lowIdx] );
+					XMVECTOR high = XMLoadFloat4( &rotKeySet.value[highIdx] );
+					XMVECTOR interp = XMQuaternionSlerp( low, high, factor );
+					XMVECTOR normalized = XMQuaternionNormalize( interp );
+					rotMat = XMMatrixRotationQuaternion( interp );
+				}
 			}
-			XMVECTOR low = XMLoadFloat4( &itLow->second );
-			XMVECTOR high = XMLoadFloat4( &itHigh->second );
-			XMVECTOR interp = XMQuaternionSlerp( low, high, factor );
-			XMVECTOR normalized = XMQuaternionNormalize( interp );
-			rotMat = XMMatrixRotationQuaternion( interp );
 		}
 
 		// Interpolate Scale
@@ -70,28 +89,46 @@ void AnimationController::Interpolate( float dt ) {
 		if( scaleSetIt==anim->scaleChannels.end() ) {
 			scaleMat = XMMatrixIdentity();
 		} else {
-			keySet_t scaleKeySet = scaleSetIt->second;
-			auto itLow = scaleKeySet.lower_bound( animCurrentTime );
-			if( itLow==scaleKeySet.begin() ) {
-				itLow = scaleKeySet.end();
-			}
-			--itLow;
-			auto itHigh = scaleKeySet.upper_bound( animCurrentTime );
-			if( itHigh==scaleKeySet.end() ) {
-				itHigh = scaleKeySet.begin();
-			}
-			float factor;
-			if( itLow==itHigh ) {
-				factor = 0.f;
+			if( scaleSetIt->second.keyTime.size()==1 ) {
+				XMVECTOR scale = XMLoadFloat4( &(scaleSetIt->second.value[0]) );
+				scaleMat = XMMatrixScalingFromVector( scale );
 			} else {
-				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+				int lowIdx = 1, highIdx = 1;
+				KeySet scaleKeySet = scaleSetIt->second;
+				auto itLow = scaleKeySet.keyTime.cbegin()+1;
+				while( *itLow<animCurrentTime ) {
+					++itLow; ++lowIdx;
+					if( itLow==scaleKeySet.keyTime.cend() ) {
+						break;
+					}
+				}
+				if( lowIdx==scaleKeySet.keyTime.size() ) {
+					--lowIdx;
+					XMFLOAT4 lowVec = scaleKeySet.value[lowIdx];
+					scaleMat = XMMatrixScaling( lowVec.x, lowVec.y, lowVec.z );
+				} else {
+					auto itHigh = itLow; highIdx = lowIdx;
+					--itLow; --lowIdx;
+					while( *itHigh<animCurrentTime ) {
+						++itHigh; ++highIdx;
+						if( itLow==scaleKeySet.keyTime.cend() ) {
+							break;
+						}
+					}
+					float factor;
+					if( itLow==itHigh ) {
+						factor = 0.f;
+					} else {
+						factor = (animCurrentTime-*itLow)/(*itHigh-*itLow);
+					}
+					XMFLOAT4 lowVec = scaleKeySet.value[lowIdx];
+					XMFLOAT4 highVec = scaleKeySet.value[highIdx];
+					scaleMat = XMMatrixScaling(
+						lowVec.x+factor*(highVec.x-lowVec.x),
+						lowVec.y+factor*(highVec.y-lowVec.y),
+						lowVec.z+factor*(highVec.z-lowVec.z) );
+				}
 			}
-			XMFLOAT4 lowVec = itLow->second;
-			XMFLOAT4 highVec = itHigh->second;
-			scaleMat = XMMatrixScaling(
-				lowVec.x+factor*(highVec.x-lowVec.x),
-				lowVec.y+factor*(highVec.y-lowVec.y),
-				lowVec.z+factor*(highVec.z-lowVec.z) );
 		}
 
 		// Interpolate Position
@@ -99,30 +136,47 @@ void AnimationController::Interpolate( float dt ) {
 		if( posSetIt==anim->posChannels.end() ) {
 			translateMat = XMMatrixIdentity();
 		} else {
-			keySet_t posKeySet = posSetIt->second;
-			auto itLow = posKeySet.lower_bound( animCurrentTime );
-			if( itLow==posKeySet.begin() ) {
-				itLow = posKeySet.end();
-			}
-			--itLow;
-			auto itHigh = posKeySet.upper_bound( animCurrentTime );
-			if( itHigh==posKeySet.end() ) {
-				itHigh = posKeySet.begin();
-			}
-			float factor;
-			if( itLow==itHigh ) {
-				factor = 0.f;
+			if( posSetIt->second.keyTime.size()==1 ) {
+				XMVECTOR pos = XMLoadFloat4( &(posSetIt->second.value[0]) );
+				translateMat = XMMatrixTranslationFromVector( pos );
 			} else {
-				factor = (animCurrentTime-itLow->first)/(itHigh->first-itLow->first);
+				int lowIdx = 1, highIdx = 1;
+				KeySet posKeySet = posSetIt->second;
+				auto itLow = posKeySet.keyTime.cbegin()+1;
+				while( *itLow<animCurrentTime ) {
+					++itLow; ++lowIdx;
+					if( itLow==posKeySet.keyTime.cend() ) {
+						break;
+					}
+				}
+				if( lowIdx==posKeySet.keyTime.size() ) {
+					--lowIdx;
+					XMFLOAT4 lowVec = posKeySet.value[lowIdx];
+					translateMat = XMMatrixTranslation( lowVec.x, lowVec.y, lowVec.z );
+				} else {
+					auto itHigh = itLow; highIdx = lowIdx;
+					--itLow; --lowIdx;
+					while( *itHigh<animCurrentTime ) {
+						++itHigh; ++highIdx;
+						if( itLow==posKeySet.keyTime.cend() ) {
+							break;
+						}
+					}
+					float factor;
+					if( itLow==itHigh ) {
+						factor = 0.f;
+					} else {
+						factor = (animCurrentTime-*itLow)/(*itHigh-*itLow);
+					}
+					XMFLOAT4 lowVec = posKeySet.value[lowIdx];
+					XMFLOAT4 highVec = posKeySet.value[highIdx];
+					translateMat = XMMatrixTranslation(
+						lowVec.x+factor*(highVec.x-lowVec.x),
+						lowVec.y+factor*(highVec.y-lowVec.y),
+						lowVec.z+factor*(highVec.z-lowVec.z) );
+				}
 			}
-			XMFLOAT4 lowVec = itLow->second;
-			XMFLOAT4 highVec = itHigh->second;
-			translateMat = XMMatrixTranslation(
-				lowVec.x+factor*(highVec.x-lowVec.x),
-				lowVec.y+factor*(highVec.y-lowVec.y),
-				lowVec.z+factor*(highVec.z-lowVec.z) );
 		}
-
 		XMMATRIX finalMat = scaleMat * rotMat * translateMat;
 		XMFLOAT4X4 transform;
 		XMStoreFloat4x4( &transform, finalMat );

@@ -91,12 +91,12 @@ Player::~Player()
 {}
 
 bool Player::init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr, const std::wstring& texturePath ) {
-	if( !loader->Load( device, "./Models/gawky2_0006.fbx", Vertex::POS_NORMAL_TEX_TAN_SKINNED, mModel, &skeleton, &animController ) ) {
+	if( !loader->Load( device, "./Models/gawky2_0012.fbx", Vertex::POS_NORMAL_TEX_TAN_SKINNED, mModel, &skeleton, &animController ) ) {
 		return false;
 	}
 	
 	skeleton.SetAnimationController( &animController );
-	animController.ChangeAnim( ANIM_NAME::ANIM_IDLE );
+	animController.ChangeAnim( ANIM_NAME::JUMP );
 
 	// New AssImp changes
 	mDiffuseSRV = texMgr.CreateTexture( texturePath+L"Gawky2_diffuse_color.png" );

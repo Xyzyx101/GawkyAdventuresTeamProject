@@ -58,7 +58,7 @@ struct SkinnedVertexIn
 	float3 NormalL		: NORMAL;
 	float2 Tex			: TEXCOORD;
 	float4 TangentL		: TANGENT;
-	float3 Weights		: WEIGHTS;
+	float4 Weights		: WEIGHTS;
 	uint4  BoneIndices	: BONEINDICES;
 };
 
