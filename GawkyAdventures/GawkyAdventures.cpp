@@ -35,30 +35,23 @@ public:
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
-
-	//DeltaTime getter
 	float Game::getDeltaTime();
-	////////////////////
 
 private:
 
 	Sky* mSky;
+	
 
-	////////////////////////////////////////Player
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
 	XMVECTOR PlayerUp;
 
-
-	///////lighting
 	DirectionalLight mDirLights[3];
 	UINT mLightCount;
 
-	////// Camera
 	Camera mCam;
 
-	//mouse
 	POINT mLastMousePos;
 
 	/// DeltaTime
@@ -80,10 +73,8 @@ private:
 
 	Player* PlayerOne;
 
-
 	int totEnemy;
 	int totCollect;
-
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -94,10 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-
 	Game theApp(hInstance);
-
-
 
 	if (!theApp.Init(hInstance))
 		return 0;
@@ -113,7 +101,6 @@ Game::Game(HINSTANCE hInstance)
 {
 	mMainWndCaption = L"Adventures of Gawky";
 
-
 	PlayerForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	PlayerRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	PlayerUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -121,10 +108,9 @@ Game::Game(HINSTANCE hInstance)
 	////send player information to the camera
 	mCam.getPlayerPos(mPlayerPosition);
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
-
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-
+	//mSound = 0;
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -144,11 +130,16 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
+	// if sound exists, delete
+	//if (mSound) {
+	//	delete mSound;
+	//	mSound = 0;
+	//}
+
 	SafeDelete(mSky);
 	SafeDelete(Objects);
 	SafeDelete(Level1);
 	SafeDelete(theEnemies);
-
 
 	Effects::DestroyAll();
 	InputLayouts::DestroyAll();
@@ -379,23 +370,19 @@ bool Game::Init(HINSTANCE hInstance)
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, 13 + z2o, ctCollect, 1);
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, -27 + z2o, ctCollect, 1);
 
-
 	theEnemies->createEnemy(simpleEnemy, 31 + x2o, 2 + y2o, -6 + z2o, 76 + x2o, 2 + y2o, -6 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 76 + x2o, 2 + y2o, 32 + z2o, 31 + x2o, 2 + y2o, 32 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
 	theEnemies->createEnemy(simpleEnemy, 27 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -42 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 47 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -62 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
-
 	///unkillable enemies must be placed at the end
 	theEnemies->createEnemy(tractor, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 1, 30, ctUnkillable);
 	theEnemies->createEnemy(tractor, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 1, 30, ctUnkillable);
 
-
 	theEnemies->CreateBoundingBox();
 	Objects->CreateBoundingBox();
 	Level1->CreateBoundingBox();
-
 
 	////////
 
@@ -424,6 +411,17 @@ bool Game::Init(HINSTANCE hInstance)
 
 
 	//////////////////////////////////////////////////////////
+
+	
+	// create sound object
+	HRESULT result;\
+	// init the sound object
+	result = SoundSystem::Init(mhMainWnd);
+	if (!result) {
+		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
+		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
+	}
+
 
 	return true;
 }
@@ -682,6 +680,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
+			SoundSystem::Play(QUACK);
 		}
 
 	}
@@ -706,7 +705,6 @@ void Game::UpdateScene(float dt)
 	// Switch the number of lights based on key presses.
 	//
 	if (GetAsyncKeyState('0') & 0x8000)
-
 	{
 		mLightCount = 0;
 	}
@@ -731,6 +729,7 @@ void Game::UpdateScene(float dt)
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
+
 }
 
 void Game::addDeltaTime(float dt)
