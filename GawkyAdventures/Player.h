@@ -23,6 +23,7 @@ public:
 
 	void move(float dt, XMVECTOR direction, Enemies* guys,TheObjects* things);
 	void update();
+	void updateCollisions();
 
 	void setMoveDirection(XMVECTOR mDirection);
 

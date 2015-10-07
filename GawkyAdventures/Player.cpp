@@ -627,6 +627,8 @@ void Player::move(float dt, XMVECTOR direction, Enemies* guys, TheObjects* thing
 			fellOffMap = true;
 		}
 	}
+
+
 	animController.Interpolate( dt );
 }
 

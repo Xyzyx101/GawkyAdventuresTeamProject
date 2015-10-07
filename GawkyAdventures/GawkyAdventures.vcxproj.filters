@@ -149,6 +149,9 @@
     <ClCompile Include="Skeleton.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SoundSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicModel.h">
@@ -259,6 +262,9 @@
     <ClInclude Include="Skeleton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SoundSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="Effects11.lib">
@@ -267,5 +273,9 @@
     <Library Include="Effects11d.lib">
       <Filter>Common</Filter>
     </Library>
+    <Library Include="Sound\FMODex\api\lib\fmodex_vc.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sound\FMODex\api\fmodex.dll" />
   </ItemGroup>
 </Project>
