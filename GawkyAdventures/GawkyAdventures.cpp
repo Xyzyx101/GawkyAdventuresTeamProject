@@ -84,14 +84,7 @@ private:
 	int totEnemy;
 	int totCollect;
 
-
-
 };
-
-
-
-
-
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	PSTR cmdLine, int showCmd)
@@ -683,12 +676,9 @@ void Game::UpdateScene(float dt)
 		mCam.Pitch(-dy);
 	}
 
-
-
-
 	if (PlayerOne->getOnGround() == true)
 	{
-		if (GetAsyncKeyState('J') & 0x8000)
+		if (GetAsyncKeyState( VK_SPACE ))
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
@@ -696,9 +686,7 @@ void Game::UpdateScene(float dt)
 
 	}
 
-
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
-
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
 
