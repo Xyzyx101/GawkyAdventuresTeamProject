@@ -3,13 +3,14 @@
 #include "d3dUtil.h"
 #include "xnacollision.h"
 #include "BasicModel.h"
-
+#include "Model.h"
+#include "Skeleton.h"
+#include "AnimationController.h"
 
 class Camera;
-
 class Enemies;
 class TheObjects;
-
+class ModelLoader;
 
 class Player
 {
@@ -18,9 +19,11 @@ public:
 		const std::string& modelFilename,
 		const std::wstring& texturePath, FLOAT x, FLOAT y, FLOAT z);
 	~Player();
+	bool init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr, const std::wstring& texturePath );
 
 	void move(float dt, XMVECTOR direction, Enemies* guys,TheObjects* things);
 	void update();
+	void updateCollisions();
 
 	void setMoveDirection(XMVECTOR mDirection);
 
@@ -34,6 +37,14 @@ public:
 	void drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTechnique* activeTexTech);
 
 private:
+	Model mModel;
+	Material mMaterial;
+	Skeleton skeleton;
+	AnimationController animController;
+	ID3D11ShaderResourceView* mDiffuseSRV;
+
+	void initPlayer();
+	void setPlayerModel(ID3D11Device* device, TextureMgr& texMgr, const std::string& modelFilename, const std::wstring& texturePath);
 
 	XMFLOAT3 mPlayerPosition;
 	XMFLOAT3 mPlayerScale;
@@ -100,6 +111,5 @@ private:
 	BasicModel* playerModel;
 
 	BasicModelInstance mPlayer;
-
 };
 

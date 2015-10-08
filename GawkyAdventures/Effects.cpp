@@ -118,9 +118,6 @@ SkyEffect::~SkyEffect()
 }
 #pragma endregion
 
-
-
-
 #pragma region NormalMapEffect
 NormalMapEffect::NormalMapEffect(ID3D11Device* device, const std::wstring& filename)
 	: Effect(device, filename)
@@ -206,11 +203,6 @@ NormalMapEffect::~NormalMapEffect()
 }
 #pragma endregion
 
-
-
-
-
-
 #pragma region InstancedBasicEffect
 InstancedBasicEffect::InstancedBasicEffect(ID3D11Device* device, const std::wstring& filename)
 	: Effect(device, filename)
@@ -262,14 +254,53 @@ InstancedBasicEffect::~InstancedBasicEffect()
 #pragma endregion
 
 
+#pragma region GawkyEffect
+GawkyEffect::GawkyEffect( ID3D11Device* device, const std::wstring& filename )
+	: Effect( device, filename ) {
+	
+	Light0TexTech = mFX->GetTechniqueByName( "Light0Tex" );
+	Light1TexTech = mFX->GetTechniqueByName( "Light1Tex" );
+	Light2TexTech = mFX->GetTechniqueByName( "Light2Tex" );
+	Light3TexTech = mFX->GetTechniqueByName( "Light3Tex" );
 
+	Light1ReflectTech = mFX->GetTechniqueByName( "Light1Reflect" );
+	Light2ReflectTech = mFX->GetTechniqueByName( "Light2Reflect" );
+	Light3ReflectTech = mFX->GetTechniqueByName( "Light3Reflect" );
+
+	Light0TexReflectTech = mFX->GetTechniqueByName( "Light0TexReflect" );
+	Light1TexReflectTech = mFX->GetTechniqueByName( "Light1TexReflect" );
+	Light2TexReflectTech = mFX->GetTechniqueByName( "Light2TexReflect" );
+	Light3TexReflectTech = mFX->GetTechniqueByName( "Light3TexReflect" );
+
+	Light0TexSkinnedTech = mFX->GetTechniqueByName( "Light0TexSkinned" );
+	Light1TexSkinnedTech = mFX->GetTechniqueByName( "Light1TexSkinned" );
+	Light2TexSkinnedTech = mFX->GetTechniqueByName( "Light2TexSkinned" );
+	Light3TexSkinnedTech = mFX->GetTechniqueByName( "Light2TexSkinned" );
+
+	WorldViewProj = mFX->GetVariableByName( "gWorldViewProj" )->AsMatrix();
+	World = mFX->GetVariableByName( "gWorld" )->AsMatrix();
+	WorldInvTranspose = mFX->GetVariableByName( "gWorldInvTranspose" )->AsMatrix();
+	TexTransform = mFX->GetVariableByName( "gTexTransform" )->AsMatrix();
+	EyePosW = mFX->GetVariableByName( "gEyePosW" )->AsVector();
+	
+	BoneTransforms = mFX->GetVariableByName( "gBoneTransforms" )->AsMatrix();
+
+	DirLights = mFX->GetVariableByName( "gDirLights" );
+	PLights = mFX->GetVariableByName( "gPLights" );
+	Mat = mFX->GetVariableByName( "gMaterial" );
+	DiffuseMap = mFX->GetVariableByName( "gDiffuseMap" )->AsShaderResource();
+	CubeMap = mFX->GetVariableByName( "gCubeMap" )->AsShaderResource();
+}
+GawkyEffect::~GawkyEffect() {}
+#pragma endregion
 
 #pragma region Effects
 
-BasicEffect* Effects::BasicFX = 0;
-SkyEffect*   Effects::SkyFX = 0;
-InstancedBasicEffect* Effects::InstanceFX = 0;
-NormalMapEffect*       Effects::NormalMapFX = 0;
+BasicEffect*			Effects::BasicFX = 0;
+SkyEffect*				Effects::SkyFX = 0;
+InstancedBasicEffect*	Effects::InstanceFX = 0;
+NormalMapEffect*		Effects::NormalMapFX = 0;
+GawkyEffect*			Effects::GawkyFX = 0;
 
 void Effects::InitAll(ID3D11Device* device)
 {
@@ -277,6 +308,7 @@ void Effects::InitAll(ID3D11Device* device)
 	SkyFX = new SkyEffect(device, L"FX/Sky.fxo");
 	InstanceFX = new InstancedBasicEffect(device, L"FX/Sky.fxo");
 	NormalMapFX = new NormalMapEffect(device, L"FX/NormalMap.fxo");
+	GawkyFX = new GawkyEffect( device, L"FX/Gawky.fxo" );
 }
 
 void Effects::DestroyAll()
@@ -284,6 +316,7 @@ void Effects::DestroyAll()
 	SafeDelete(BasicFX);
 	SafeDelete(SkyFX);
 	SafeDelete(NormalMapFX);
+	SafeDelete( GawkyFX );
 }
 
 #pragma endregion

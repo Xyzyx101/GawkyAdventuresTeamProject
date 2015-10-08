@@ -11,6 +11,12 @@
 
 namespace Vertex
 {
+	enum VERTEX_TYPE {
+		BASIC_32,
+		POS_NORMAL_TEX_TAN,
+		POS_NORMAL_TEX_TAN_SKINNED
+	};
+	
 	// Basic 32-byte vertex structure.
 	struct Basic32
 	{
@@ -21,7 +27,8 @@ namespace Vertex
 
 
 	// Basic 32-byte vertex structure.
-	struct Basicmodel
+	// Is this used anywhere ????
+	/*struct Basicmodel
 	{
 		Basicmodel(){}
 		Basicmodel(float x, float y, float z,
@@ -34,7 +41,7 @@ namespace Vertex
 		XMFLOAT3 Pos;	
 		XMFLOAT2 Tex;
 		XMFLOAT3 Normal;
-	};
+	};*/
 
 	struct PosNormalTexTan
 	{
@@ -44,11 +51,14 @@ namespace Vertex
 		XMFLOAT4 TangentU;
 	};
 
-
-
-
-
-
+	struct PosNormalTexTanSkinned {
+		XMFLOAT3 Pos;
+		XMFLOAT3 Normal;
+		XMFLOAT2 Tex;
+		XMFLOAT4 TangentU;
+		XMFLOAT4 Weights;
+		BYTE	 BoneIndicies[4];
+	};
 }
 
 class InputLayoutDesc
@@ -61,7 +71,7 @@ public:
 	static const D3D11_INPUT_ELEMENT_DESC InstancedBasic32[8];
 
 	static const D3D11_INPUT_ELEMENT_DESC PosNormalTexTan[4];
-
+	static const D3D11_INPUT_ELEMENT_DESC PosNormalTexTanSkinned[6];
 };
 
 class InputLayouts
@@ -73,8 +83,8 @@ public:
 	static ID3D11InputLayout* Pos;
 	static ID3D11InputLayout* Basic32;
 	static ID3D11InputLayout* InstancedBasic32;
-
 	static ID3D11InputLayout* PosNormalTexTan;
+	static ID3D11InputLayout* PosNormalTexTanSkinned;
 };
 
 #endif // VERTEX_H

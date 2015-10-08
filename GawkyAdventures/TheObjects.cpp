@@ -4,7 +4,7 @@
 #include "Effects.h"
 #include "Camera.h"
 #include "Object.h"
-#include "ModelEnum.cpp"
+#include "ModelEnum.h"
 
 
 
@@ -71,21 +71,21 @@ void TheObjects::draw(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTech
 		worldInvTranspose = MathHelper::InverseTranspose(world);
 		worldViewProj = world*view*proj;
 
-		Effects::BasicFX->SetWorld(world);
-		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		Effects::BasicFX->SetWorldViewProj(worldViewProj);
+		Effects::GawkyFX->SetWorld(world);
+		Effects::GawkyFX->SetWorldInvTranspose(worldInvTranspose);
+		Effects::GawkyFX->SetWorldViewProj(worldViewProj);
 
 
 
 
 		//I do not have shadoews
 		//Effects::BasicFX->SetShadowTransform(world*shadowTransform);
-		Effects::BasicFX->SetTexTransform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
+		Effects::GawkyFX->SetTexTransform(XMMatrixScaling(1.0f, 1.0f, 1.0f));
 
 		for (UINT subset = 0; subset < mObjectInstances[modelIndex].Model->SubsetCount; ++subset)
 		{
-			Effects::BasicFX->SetMaterial(mObjectInstances[modelIndex].Model->Mat[subset]);
-			Effects::BasicFX->SetDiffuseMap(mObjectInstances[modelIndex].Model->DiffuseMapSRV[subset]);
+			Effects::GawkyFX->SetMaterial(mObjectInstances[modelIndex].Model->Mat[subset]);
+			Effects::GawkyFX->SetDiffuseMap(mObjectInstances[modelIndex].Model->DiffuseMapSRV[subset]);
 			//Effects::BasicFX->SetNormalMap(mModelInstances[modelIndex].Model->NormalMapSRV[subset]);
 
 			activeTexTech->GetPassByIndex(0)->Apply(0, dc);

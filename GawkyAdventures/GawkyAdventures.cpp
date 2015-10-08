@@ -1,4 +1,5 @@
 #include "d3dApp.h"
+#include <stdio.h>
 #include "d3dx11Effect.h"
 #include "GeometryGenerator.h"
 #include "MathHelper.h"
@@ -16,7 +17,8 @@
 #include "TheObjects.h"
 #include "LevelBuilder.h"
 #include "Player.h"
-#include "ModelEnum.cpp"
+#include "ModelEnum.h"
+#include "ModelLoader.h"
 
 class Game : public D3DApp
 {
@@ -33,30 +35,23 @@ public:
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
-
-	//DeltaTime getter
 	float Game::getDeltaTime();
-	////////////////////
 
 private:
 
 	Sky* mSky;
+	
 
-	////////////////////////////////////////Player
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
 	XMVECTOR PlayerUp;
 
-
-	///////lighting
 	DirectionalLight mDirLights[3];
 	UINT mLightCount;
 
-	////// Camera
 	Camera mCam;
 
-	//mouse
 	POINT mLastMousePos;
 
 	/// DeltaTime
@@ -78,10 +73,8 @@ private:
 
 	Player* PlayerOne;
 
-
 	int totEnemy;
 	int totCollect;
-
 };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
@@ -92,10 +85,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-
 	Game theApp(hInstance);
-
-
 
 	if (!theApp.Init(hInstance))
 		return 0;
@@ -111,7 +101,6 @@ Game::Game(HINSTANCE hInstance)
 {
 	mMainWndCaption = L"Adventures of Gawky";
 
-
 	PlayerForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 	PlayerRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 	PlayerUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
@@ -119,10 +108,9 @@ Game::Game(HINSTANCE hInstance)
 	////send player information to the camera
 	mCam.getPlayerPos(mPlayerPosition);
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
-
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-
+	//mSound = 0;
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -142,11 +130,16 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
+	// if sound exists, delete
+	//if (mSound) {
+	//	delete mSound;
+	//	mSound = 0;
+	//}
+
 	SafeDelete(mSky);
 	SafeDelete(Objects);
 	SafeDelete(Level1);
 	SafeDelete(theEnemies);
-
 
 	Effects::DestroyAll();
 	InputLayouts::DestroyAll();
@@ -168,6 +161,13 @@ bool Game::Init(HINSTANCE hInstance)
 
 	/// create the player
 	PlayerOne = new Player(md3dDevice, mTexMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
+	ModelLoader* modelLoader = new ModelLoader();
+	if( !PlayerOne->init( md3dDevice, modelLoader, mTexMgr, L"Textures\\" ) ) {
+		wchar_t msgbuf[256];
+		wsprintf( msgbuf, L"\nPlayer Init Failed!!!\n\n");
+		OutputDebugString( msgbuf );
+		return false;
+	}
 
 	//// load  the level models
 	theEnemies = new Enemies(md3dDevice, mTexMgr);
@@ -370,23 +370,19 @@ bool Game::Init(HINSTANCE hInstance)
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, 13 + z2o, ctCollect, 1);
 	Objects->createObject(orange, 54 + x2o, 35 + y2o, -27 + z2o, ctCollect, 1);
 
-
 	theEnemies->createEnemy(simpleEnemy, 31 + x2o, 2 + y2o, -6 + z2o, 76 + x2o, 2 + y2o, -6 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 76 + x2o, 2 + y2o, 32 + z2o, 31 + x2o, 2 + y2o, 32 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
 	theEnemies->createEnemy(simpleEnemy, 27 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -42 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 	theEnemies->createEnemy(simpleEnemy, 47 + x2o, 2 + y2o, -62 + z2o, 27 + x2o, 2 + y2o, -62 + z2o, NULL, 0, 0, NULL, 0, 0, 3, 15, ctEnemy);
 
-
 	///unkillable enemies must be placed at the end
 	theEnemies->createEnemy(tractor, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 1, 30, ctUnkillable);
 	theEnemies->createEnemy(tractor, 103 + x2o, 13 + y2o, -96 + z2o, 103 + x2o, 13 + y2o, 88 + z2o, 4.0f + x2o, 13 + y2o, 88.0f + z2o, 4 + x2o, 13 + y2o, -96 + z2o, 1, 30, ctUnkillable);
 
-
 	theEnemies->CreateBoundingBox();
 	Objects->CreateBoundingBox();
 	Level1->CreateBoundingBox();
-
 
 	////////
 
@@ -416,6 +412,17 @@ bool Game::Init(HINSTANCE hInstance)
 
 	//////////////////////////////////////////////////////////
 
+	
+	// create sound object
+	HRESULT result;\
+	// init the sound object
+	result = SoundSystem::Init(mhMainWnd);
+	if (!result) {
+		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
+		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
+	}
+
+
 	return true;
 }
 
@@ -436,34 +443,38 @@ void Game::DrawScene()
 	mCam.UpdateViewMatrix();
 
 	// Set per frame constants.
-	Effects::BasicFX->SetDirLights(mDirLights);
-	Effects::BasicFX->SetEyePosW(mCam.GetPosition());
-	Effects::BasicFX->SetCubeMap(mSky->CubeMapSRV());
+	Effects::GawkyFX->SetDirLights(mDirLights);
+	Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
+	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
 	
 
 	// Figure out which technique to use.  Skull does not have texture coordinates,
 	// so we need a separate technique for it, and not every surface is reflective,
 	// so don't pay for cubemap look up.
 
-	ID3DX11EffectTechnique* activeTexTech = Effects::BasicFX->Light1TexTech;
-	ID3DX11EffectTechnique* activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-	ID3DX11EffectTechnique* activeSkullTech = Effects::BasicFX->Light1ReflectTech;
+	ID3DX11EffectTechnique* activeTexTech = Effects::GawkyFX->Light1TexTech;
+	ID3DX11EffectTechnique* activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
+	ID3DX11EffectTechnique* activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
+	ID3DX11EffectTechnique* activeSkinnedTech = Effects::GawkyFX->Light1TexSkinnedTech;
 	switch (mLightCount)
 	{
 	case 1:
-		activeTexTech = Effects::BasicFX->Light1TexTech;
-		activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light1ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light1TexTech;
+		activeReflectTech = Effects::GawkyFX->Light1TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light1ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light1TexSkinnedTech;
 		break;
 	case 2:
-		activeTexTech = Effects::BasicFX->Light2TexTech;
-		activeReflectTech = Effects::BasicFX->Light2TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light2ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light2TexTech;
+		activeReflectTech = Effects::GawkyFX->Light2TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light2ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light2TexSkinnedTech;
 		break;
 	case 3:
-		activeTexTech = Effects::BasicFX->Light3TexTech;
-		activeReflectTech = Effects::BasicFX->Light3TexReflectTech;
-		activeSkullTech = Effects::BasicFX->Light3ReflectTech;
+		activeTexTech = Effects::GawkyFX->Light3TexTech;
+		activeReflectTech = Effects::GawkyFX->Light3TexReflectTech;
+		activeSkullTech = Effects::GawkyFX->Light3ReflectTech;
+		activeSkinnedTech = Effects::GawkyFX->Light3TexSkinnedTech;
 		break;
 	}
 
@@ -476,7 +487,8 @@ void Game::DrawScene()
 	Level1->draw(md3dImmediateContext, mCam, activeTexTech);
 
 	//draw player
-	PlayerOne->drawPlayer(md3dImmediateContext, mCam, activeTexTech);
+	md3dImmediateContext->IASetInputLayout( InputLayouts::PosNormalTexTanSkinned );
+	PlayerOne->drawPlayer( md3dImmediateContext, mCam, activeSkinnedTech );
 
 	////////////////////////////////////////
 	mSky->Draw(md3dImmediateContext, mCam);
@@ -668,12 +680,12 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
+			SoundSystem::Play(QUACK);
 		}
 
 	}
 
-	XMVECTOR addGravity = XMVectorSet(0.0f, -30 * DeltaTimeF, 0.0f, 0.0f);
-
+	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
 
@@ -693,7 +705,6 @@ void Game::UpdateScene(float dt)
 	// Switch the number of lights based on key presses.
 	//
 	if (GetAsyncKeyState('0') & 0x8000)
-
 	{
 		mLightCount = 0;
 	}
@@ -718,6 +729,7 @@ void Game::UpdateScene(float dt)
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
+
 }
 
 void Game::addDeltaTime(float dt)
