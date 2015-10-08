@@ -3,7 +3,7 @@
 
 #include <fmod.hpp>
 #include <windows.h>
-enum SOUND { QUACK, SAYQUACK, MOBDEATH };
+enum SOUND { QUACK, SAYQUACK, MOBDEATH, PICKUP };
 
 class SoundSystem 
 {
@@ -15,8 +15,8 @@ private:
 	SoundSystem();
 	static SoundSystem* instance;
 	FMOD::System     *system;
-	FMOD::Sound      *sound1, *sound2, *sound3, *music;
-	FMOD::Channel    *channel1, *channel2, *channel3, *musicChannel;
+	FMOD::Sound      *sound1, *sound2, *sound3, *sound4, *music;
+	FMOD::Channel    *channel1, *channel2, *channel3, *channel4, *musicChannel;
 	FMOD_RESULT      result;
 	FMOD_CAPS		 caps;
 	unsigned int     version;

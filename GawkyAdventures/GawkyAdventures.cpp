@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "ModelEnum.h"
 #include "ModelLoader.h"
+#include "Controller.h"
 
 class Game : public D3DApp
 {
@@ -40,7 +41,7 @@ public:
 private:
 
 	Sky* mSky;
-	
+	Controller* mController;
 
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
@@ -110,7 +111,7 @@ Game::Game(HINSTANCE hInstance)
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-	//mSound = 0;
+	
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
@@ -130,11 +131,11 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
-	// if sound exists, delete
-	//if (mSound) {
-	//	delete mSound;
-	//	mSound = 0;
-	//}
+	// if controller existed
+	if (mController) {
+		delete mController;
+		mController = 0;
+	}
 
 	SafeDelete(mSky);
 	SafeDelete(Objects);
@@ -413,16 +414,17 @@ bool Game::Init(HINSTANCE hInstance)
 	//////////////////////////////////////////////////////////
 
 	
-	// create sound object
-	HRESULT result;\
+	HRESULT result;
 	// init the sound object
 	result = SoundSystem::Init(mhMainWnd);
 	if (!result) {
-		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
+		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex sound!", L"Error", MB_OK);
 		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
 	}
 
-
+	mController = new Controller(PlayerOne);
+	// init controller
+	mController->InitControllerInput(mhMainWnd);
 	return true;
 }
 
@@ -562,7 +564,7 @@ void Game::UpdateScene(float dt)
 
 		int something = 0;
 		LevelCollisions.pop_back();
-
+				
 		int j = 0;
 		for (UINT i = tempLevel.size(); i < (tempLevel.size() + tempObject.size()); i++, j++)
 		{
@@ -680,7 +682,7 @@ void Game::UpdateScene(float dt)
 		{
 			desiredCharDir += camUp;
 			moveChar = true;
-			SoundSystem::Play(QUACK);
+			SoundSystem::Play(SOUND::SAYQUACK);
 		}
 
 	}
@@ -718,7 +720,7 @@ void Game::UpdateScene(float dt)
 		mLightCount = 3;
 
 
-
+	mController->CheckControllerState(mhMainWnd);
 	////send player information to the camera
 
 	mCam.getPlayerPos(PlayerOne->getPlayerPosition());

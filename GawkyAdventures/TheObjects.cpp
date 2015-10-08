@@ -5,7 +5,7 @@
 #include "Camera.h"
 #include "Object.h"
 #include "ModelEnum.h"
-
+#include "SoundSystem.h"
 
 
 
@@ -322,6 +322,7 @@ void TheObjects::update(float dt)
 
 void TheObjects::RemovemObjectInstance(int number)
 {
+	SoundSystem::Play(SOUND::PICKUP);
 	mObjectInstances.erase(mObjectInstances.begin() + number);
 
 	LevelCollisions.erase(LevelCollisions.begin() + number);
