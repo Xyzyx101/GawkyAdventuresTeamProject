@@ -91,7 +91,7 @@ Player::~Player()
 {}
 
 bool Player::init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr, const std::wstring& texturePath ) {
-	if( !loader->Load( device, "./Models/gawky2_0012.fbx", Vertex::POS_NORMAL_TEX_TAN_SKINNED, mModel, &skeleton, &animController ) ) {
+	if( !loader->Load( device, "./Models/gawky2_0014.fbx", Vertex::POS_NORMAL_TEX_TAN_SKINNED, mModel, &skeleton, &animController ) ) {
 		return false;
 	}
 	
@@ -144,7 +144,7 @@ void Player::update()
 
 	if (isFalling == true || isJump == true)
 	{
-		currGround = -100.0f;
+		currGround = 0.0f;
 	}
 	if (fellOffMap == true)
 	{
