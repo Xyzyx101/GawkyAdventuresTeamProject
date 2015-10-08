@@ -446,7 +446,7 @@ void Game::DrawScene()
 
 	// Set per frame constants.
 	Effects::GawkyFX->SetDirLights(mDirLights);
-	Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
+	// Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
 	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
 	
 

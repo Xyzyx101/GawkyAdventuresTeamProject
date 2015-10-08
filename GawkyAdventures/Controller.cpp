@@ -56,7 +56,9 @@ void Controller::CheckControllerState(HWND hWnd) {
 	float normalizedLY = LY / magnitudeL;
 	float normalizedMagnitudeL = 0;
 	// check if controller is outside a circular dead zone
-	if (magnitudeL > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {
+	if (magnitudeL > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {		// IF LEFT STICK IS MOVED
+		
+		SoundSystem::Play(SOUND::MOBDEATH);
 		// clip the magnitude at its expected max value
 		if (magnitudeL > 32767) { magnitudeL = 32767; }
 		// adjust magnitude relative to the end of the dead zone
@@ -78,7 +80,9 @@ void Controller::CheckControllerState(HWND hWnd) {
 	float normalizedRY = RY / magnitudeR;
 	float normalizedMagnitudeR = 0;
 	// check if controller is outside a circular dead zone
-	if (magnitudeR > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {
+	if (magnitudeR > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {		// IF RIGHT STICK IS MOVED
+		
+		SoundSystem::Play(SOUND::PICKUP);
 		// clip the magnitude at its expected max value
 		if (magnitudeR > 32767) { magnitudeR = 32767; }
 		// adjust magnitude relative to the end of the dead zone
@@ -91,22 +95,41 @@ void Controller::CheckControllerState(HWND hWnd) {
 		normalizedMagnitudeR = 0.0;
 	}
 	
-	// updates to run when controller does certain things
+	// controller use and what to do...
 	switch (mControllerState.Gamepad.wButtons) {
-	case XINPUT_GAMEPAD_A :		
+	case XINPUT_GAMEPAD_A :					// A-Button
 		SoundSystem::Play(SOUND::SAYQUACK);
 		break;
-	case XINPUT_GAMEPAD_B :
+	case XINPUT_GAMEPAD_B :					// B-Button
 		SoundSystem::Play(SOUND::QUACK);
 		break;
-	case XINPUT_GAMEPAD_X :
+	case XINPUT_GAMEPAD_X :					// X-Button
 		SoundSystem::Play(SOUND::PICKUP);
 		break;
-	case XINPUT_GAMEPAD_Y :
+	case XINPUT_GAMEPAD_Y :					// Y-Button
 		SoundSystem::Play(SOUND::MOBDEATH);
+		break;
+	case XINPUT_GAMEPAD_LEFT_THUMB :		// when left stick is pressed in
+		SoundSystem::Play(SOUND::PICKUP);
+		break;
+	case XINPUT_GAMEPAD_RIGHT_THUMB:		// when right stick is pressed in
+		SoundSystem::Play(SOUND::PICKUP);
+		break;
+	case XINPUT_GAMEPAD_START :				// Start-Button
+		SoundSystem::Play(SOUND::MOBDEATH);
+		break;
+	case XINPUT_GAMEPAD_BACK :				// Back-Button (select)
+		SoundSystem::Play(SOUND::MOBDEATH);
+		break;
+	case XINPUT_GAMEPAD_LEFT_SHOULDER :		// Left-Upper Trigger
+		SoundSystem::Play(SOUND::PICKUP);
+		break;
+	case XINPUT_GAMEPAD_RIGHT_SHOULDER :		// Right-Upper Trigger
+		SoundSystem::Play(SOUND::PICKUP);
 		break;
 	default:
 		break;
 	}
+
 
 }
