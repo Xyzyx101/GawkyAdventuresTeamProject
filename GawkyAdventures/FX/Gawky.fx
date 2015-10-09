@@ -379,6 +379,15 @@ float4 CelShadePS( VertexOut pin) : SV_Target
 		litColor = lerp( texColor, float4(1.f, 1.f, 1.f, 1.f), 0.5f ); 
 	}
 
+	if( pin.PosW.y<gPlayerPos.y ) {
+		float radius = (gPlayerPos.y-pin.PosW.y)*0.075;
+		float radiusDiff = 3-radius;
+		float diffX = pin.PosW.x-gPlayerPos.x;
+		float diffZ = pin.PosW.z-gPlayerPos.z;
+		if( sqrt( diffX * diffX+diffZ*diffZ )<radiusDiff ) {
+			litColor = lerp( litColor*0.35f, litColor, saturate(radius));
+		}
+	}
 	return litColor;
 }
 

@@ -272,6 +272,7 @@ void Player::initFSM() {
 
 	FSM<Player>::StateData dieStateData;
 	dieStateData.Before = &Player::Die_Before;
+	dieStateData.Update = &Player::Die_Update;
 	fsm->AddState( FSM_STATE::STATE_DIE, dieStateData );
 
 	fsm->ChangeState( FSM_STATE::STATE_IDLE );
