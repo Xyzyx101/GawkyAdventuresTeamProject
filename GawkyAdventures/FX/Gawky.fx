@@ -5,14 +5,12 @@
 //=============================================================================
 
 #include "LightHelper.fx"
-
-
  
 cbuffer cbPerFrame
 {
+	float3 gPlayerPos;
 	DirectionalLight gDirLights[3];
 	float3 gEyePosW;
-
 	float  gFogStart;
 	float  gFogRange;
 	float4 gFogColor;
@@ -107,7 +105,7 @@ VertexOut SkinnedVS( SkinnedVertexIn vin )
 
 	vin.NormalL = normalize( vin.NormalL.xyz );
 
-	float3 posL = float3(0.0f, 0.0f, 0.0f);
+	float3 posL = float3(0.4f, 0.4f, 0.4f);
 	float3 normalL = float3(0.0f, 0.0f, 0.0f);
 	float3 tangentL = float3(0.0f, 0.0f, 0.0f);
 	for( int i = 0; i < 4; ++i ) {
@@ -133,7 +131,6 @@ VertexOut SkinnedVS( SkinnedVertexIn vin )
 
 	return vout;
 }
-
 float4 PS(VertexOut pin, 
           uniform int gLightCount, 
 		  uniform bool gUseTexure, 
@@ -142,82 +139,129 @@ float4 PS(VertexOut pin,
 		  uniform bool gReflectionEnabled) : SV_Target
 {
 	// Interpolating normal can unnormalize it, so normalize it.
-    pin.NormalW = normalize(pin.NormalW);
-
+	pin.NormalW = normalize(pin.NormalW);
+	
 	// The toEye vector is used in lighting.
 	float3 toEye = gEyePosW - pin.PosW;
 
-	// Cache the distance to the eye from this surface point.
-	float distToEye = length(toEye);
+		// Cache the distance to the eye from this surface point.
+		float distToEye = length(toEye);
 
 	// Normalize.
 	toEye /= distToEye;
-	
-    // Default to multiplicative identity.
-    float4 texColor = float4(1, 1, 1, 1);
-    if(gUseTexure)
-	{
-		// Sample texture.
-		texColor = gDiffuseMap.Sample( samAnisotropic, pin.Tex );
 
-		if(gAlphaClip)
+	// Default to multiplicative identity.
+	float4 texColor = float4(1, 1, 1, 1);
+		if (gUseTexure)
 		{
-			// Discard pixel if texture alpha < 0.1.  Note that we do this
-			// test as soon as possible so that we can potentially exit the shader 
-			// early, thereby skipping the rest of the shader code.
-			clip(texColor.a - 0.1f);
+			// Sample texture.
+			texColor = gDiffuseMap.Sample(samAnisotropic, pin.Tex);
+
+			if (gAlphaClip)
+			{
+				// Discard pixel if texture alpha < 0.1.  Note that we do this
+				// test as soon as possible so that we can potentially exit the shader 
+				// early, thereby skipping the rest of the shader code.
+				clip(texColor.a - 0.1f);
+			}
 		}
-	}
-	 
+
 	//
 	// Lighting.
 	//
+	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+		float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
 	float4 litColor = texColor;
-	if( gLightCount > 0  )
-	{  
-		// Start with a sum of zero. 
-		float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
-		float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-		float4 spec    = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
-		// Sum the light contribution from each light source.  
-		[unroll]
-		for(int i = 0; i < gLightCount; ++i)
+		if (gLightCount > 0)
 		{
-			float4 A, D, S;
-			ComputeDirectionalLight(gMaterial, gDirLights[i], pin.NormalW, toEye, 
-				A, D, S);
+			// Start with a sum of zero. 
+				
+				// Sum the light contribution from each light source.  
+				[unroll]
+			for (int i = 0; i < gLightCount; ++i)
+			{
+				float4 A, D, S;
+				ComputeDirectionalLight(gMaterial, gDirLights[i], pin.NormalW, toEye,
+					A, D, S);
 
-			ambient += A;
-			diffuse += D;
-			spec    += S;
+				ambient += A;
+				diffuse += D;
+				spec += S;
+			}
+
+			litColor = texColor*(ambient + diffuse) + spec;
+
+			if (gReflectionEnabled)
+			{
+				float3 incident = -toEye;
+					float3 reflectionVector = reflect(incident, pin.NormalW);
+					float4 reflectionColor = gCubeMap.Sample(samAnisotropic, reflectionVector);
+
+					litColor += gMaterial.Reflect*reflectionColor;
+			}
 		}
 
-		litColor = texColor*(ambient + diffuse) + spec;
-
-		if( gReflectionEnabled )
-		{
-			float3 incident = -toEye;
-			float3 reflectionVector = reflect(incident, pin.NormalW);
-			float4 reflectionColor  = gCubeMap.Sample(samAnisotropic, reflectionVector);
-
-			litColor += gMaterial.Reflect*reflectionColor;
-		}
-	}
- 
 	//
 	// Fogging
 	//
-
-	if( gFogEnabled )
+	for (float fAngle = 0.0f; fAngle <= (2.0f * 3.1415); fAngle++)
 	{
-		float fogLerp = saturate( (distToEye - gFogStart) / gFogRange ); 
+		float3 v2[2];
+		float radius;
+		v2[0].x = v2[0].x + (radius * (float)(fAngle));
+		v2[0].y = v2[0].y + (radius * (float)(fAngle));
+
+	}
+	if (gFogEnabled)
+	{
+		float fogLerp = saturate((distToEye - gFogStart) / gFogRange);
 
 		// Blend the fog color and the lit color.
 		litColor = lerp(litColor, gFogColor, fogLerp);
 	}
-
+	
+	if (pin.PosW.y - gPlayerPos.y < -5)
+	{
+		if (pin.PosW.z - gPlayerPos.z > -1 && pin.PosW.z - gPlayerPos.z < 1)
+		{
+			if (pin.PosW.x - gPlayerPos.x < 1 && pin.PosW.x - gPlayerPos.x > -1)
+			{
+				litColor = 0.0f;
+			}
+		}
+	}
+	else if (pin.PosW.y - gPlayerPos.y < -4)
+	{
+		if (pin.PosW.z - gPlayerPos.z > -2 && pin.PosW.z - gPlayerPos.z < 2)
+		{
+			if (pin.PosW.x - gPlayerPos.x < 2 && pin.PosW.x - gPlayerPos.x > -2)
+			{
+				litColor = 0.0f;
+			}
+		}
+	}
+	else if (pin.PosW.y - gPlayerPos.y < -3.5)
+	{
+		if (pin.PosW.z - gPlayerPos.z > -4 && pin.PosW.z - gPlayerPos.z < 4)
+		{
+			if (pin.PosW.x - gPlayerPos.x < 4 && pin.PosW.x - gPlayerPos.x > -4)
+			{
+				litColor = 0.0f;
+			}
+		}
+	}
+	else if (pin.PosW.y - gPlayerPos.y < -3)
+	{
+		if (pin.PosW.z - gPlayerPos.z > -5 && pin.PosW.z - gPlayerPos.z < 5)
+		{
+			if (pin.PosW.x - gPlayerPos.x < 5 && pin.PosW.x - gPlayerPos.x > -5)
+			{
+				litColor = 0.0f;
+			}
+		}
+	}
 	// Common to take alpha from diffuse material and texture.
 	litColor.a = gMaterial.Diffuse.a * texColor.a;
 
