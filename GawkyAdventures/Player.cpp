@@ -26,8 +26,7 @@ isImmune( false ),
 isTripping( false ),
 verticalVelocity( 0.f ),
 speed( 30.f ),
-killEnemy(false)
-{
+killEnemy( false ) {
 	currCharDirection = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
 	oldCharDirection = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
 	charPosition = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
@@ -145,7 +144,7 @@ void Player::update( float dt, XMVECTOR direction, Enemies* guys, TheObjects* th
 	if( collisions[ctCollect] ) {
 		things->RemovemObjectInstance( hitThing );
 	}
-	if( collisions[ctEnemy] && killEnemy) {
+	if( collisions[ctEnemy]&&killEnemy ) {
 		guys->RemovemObjectInstance( hitEnemy );
 	}
 	killEnemy = false;
@@ -213,6 +212,7 @@ void Player::drawPlayer( ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectT
 	worldViewProj = world*view*proj;
 	Effects::GawkyFX->SetWorld( world );
 	Effects::GawkyFX->SetWorldInvTranspose( worldInvTranspose );
+	Effects::GawkyFX->SetViewProj( viewProj );
 	Effects::GawkyFX->SetWorldViewProj( worldViewProj );
 
 	Effects::GawkyFX->SetTexTransform( XMMatrixScaling( 1.0f, 1.0f, 1.0f ) );
@@ -236,12 +236,16 @@ void Player::drawPlayer( ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectT
 
 	Effects::GawkyFX->SetBoneTransforms( skeleton.GetBoneTransforms(), skeleton.BoneCount() );
 
-	activeTexTech->GetPassByIndex( 0 )->Apply( 0, dc );
 	UINT offset = 0;
 	UINT stride = mModel.VertexStride();
 	ID3D11Buffer* vBuffers[1] = { mModel.VB() };
-	dc->IASetVertexBuffers( 0, 1, &vBuffers[0], &stride, &offset );
 	ID3D11Buffer* iBuffer = mModel.IB();
+	activeTexTech->GetPassByName( "P0" )->Apply( 0, dc );
+	dc->IASetVertexBuffers( 0, 1, &vBuffers[0], &stride, &offset );
+	dc->IASetIndexBuffer( iBuffer, mModel.IndexFormat(), 0 );
+	dc->DrawIndexed( mModel.IndexCount(), 0, 0 );
+	activeTexTech->GetPassByName( "P1" )->Apply( 0, dc );
+	dc->IASetVertexBuffers( 0, 1, &vBuffers[0], &stride, &offset );
 	dc->IASetIndexBuffer( iBuffer, mModel.IndexFormat(), 0 );
 	dc->DrawIndexed( mModel.IndexCount(), 0, 0 );
 }
@@ -267,54 +271,54 @@ void Player::move( float dt, XMVECTOR direction ) {
 
 	/// if the character is tripping, push him in the direction he was going until he goes 10 spaces
 	if( isTripping==true&&isImmune==false ) {
-		startJumpPos = r;
-		isImmune = true;
-		tripDirection = direction;
-		tripDistance = direction;
+	startJumpPos = r;
+	isImmune = true;
+	tripDirection = direction;
+	tripDistance = direction;
 
 	} else if( isTripping==true&&isImmune==true ) {
-		direction = tripDirection;
-		tripDistance = XMVectorAdd( tripDistance, tripDirection );
+	direction = tripDirection;
+	tripDistance = XMVectorAdd( tripDistance, tripDirection );
 
-		//XMVector4Normalize(tripDistance);
-		FLOAT tempZ = XMVectorGetZ( tripDistance );
-		FLOAT tempX = XMVectorGetX( tripDistance );
+	//XMVector4Normalize(tripDistance);
+	FLOAT tempZ = XMVectorGetZ( tripDistance );
+	FLOAT tempX = XMVectorGetX( tripDistance );
 
-		if( tempZ<0 ) {
-			tempZ = tempZ * -1;
-		}
+	if( tempZ<0 ) {
+	tempZ = tempZ * -1;
+	}
 
-		if( tempX<0 ) {
-			tempX = tempX * -1;
-		}
+	if( tempX<0 ) {
+	tempX = tempX * -1;
+	}
 
-		FLOAT totalTripDistance = tempZ+tempX;
-		if( totalTripDistance>30.0f||totalTripDistance<-30.0f ) {
-			isImmune = false;
-			isTripping = false;
-		}
+	FLOAT totalTripDistance = tempZ+tempX;
+	if( totalTripDistance>30.0f||totalTripDistance<-30.0f ) {
+	isImmune = false;
+	isTripping = false;
+	}
 	}
 
 	///if the player is on the ground, they are allowed to jump,  if not they cannot, no flying allowed
 	if( onGround==true&&tempY>0.5f ) {
-		//Don't want to normalize the jump
-		onGround = false;
-		startJumpPos = r;
-		isJump = true;
-		hitFeet = false;
+	//Don't want to normalize the jump
+	onGround = false;
+	startJumpPos = r;
+	isJump = true;
+	hitFeet = false;
 	}
 
 	if( onGround==false&&isJump==true ) {
-		FLOAT startPos = XMVectorGetY( startJumpPos );
-		FLOAT currPos = XMVectorGetY( r );
-		tempY = dt * 30.0f;
-		if( currPos>startPos+10.0f ) {
-			isJump = false;
-			isFalling = true;
-		} else if( hitHead==true ) {
-			isFalling = true;
-			isJump = false;
-		}
+	FLOAT startPos = XMVectorGetY( startJumpPos );
+	FLOAT currPos = XMVectorGetY( r );
+	tempY = dt * 30.0f;
+	if( currPos>startPos+10.0f ) {
+	isJump = false;
+	isFalling = true;
+	} else if( hitHead==true ) {
+	isFalling = true;
+	isJump = false;
+	}
 	}
 
 	// Normalize our destinated direction vector
@@ -325,7 +329,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 	moveDirection = direction;
 	/////character spinning make it more smooth
 	if( XMVectorGetX( XMVector3Dot( direction, oldCharDirection ) )==-1 ) {
-		oldCharDirection += XMVectorSet( 0.01f, 0.0f, 0.0f, 0.0f );
+	oldCharDirection += XMVectorSet( 0.01f, 0.0f, 0.0f, 0.0f );
 	}
 
 	///////get characters position in world space
@@ -342,7 +346,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 	float charDirAngle = XMVectorGetX( XMVector3AngleBetweenNormals( XMVector3Normalize( currCharDirection ), XMVector3Normalize( PlayerForward ) ) );
 
 	if( XMVectorGetY( XMVector3Cross( currCharDirection, PlayerForward ) )>0.0f ) {
-		charDirAngle = -charDirAngle;
+	charDirAngle = -charDirAngle;
 	}
 
 	float speed = 30.0f * dt;
@@ -371,193 +375,193 @@ void Player::move( float dt, XMVECTOR direction ) {
 	/////////////////////////////////////////////////////////////  v collision system
 
 	for( UINT i = 0; i<LevelCollisions.size(); ++i ) {
-		XMStoreFloat3( &mPlayerBox.Center, charPosition );
+	XMStoreFloat3( &mPlayerBox.Center, charPosition );
 
-		// collisions with things in the world
-		XMVECTOR diff;
+	// collisions with things in the world
+	XMVECTOR diff;
 
-		mPlayerBox;//1
+	mPlayerBox;//1
 
-		LevelCollisions[i].Center;
-		LevelCollisions[i].Extents;
+	LevelCollisions[i].Center;
+	LevelCollisions[i].Extents;
 
-		int it = 0;
+	int it = 0;
 
-		FLOAT tRight = 0;
-		FLOAT tUp = 0;
-		FLOAT tForward = 0;
-		bool toRight = false;
-		bool Above = false;
-		bool inFront = false;
+	FLOAT tRight = 0;
+	FLOAT tUp = 0;
+	FLOAT tForward = 0;
+	bool toRight = false;
+	bool Above = false;
+	bool inFront = false;
 
-		///values just to check values
+	///values just to check values
 
-		float LX = LevelCollisions[i].Center.x;
-		float LY = LevelCollisions[i].Center.y;
-		float LZ = LevelCollisions[i].Center.z;
+	float LX = LevelCollisions[i].Center.x;
+	float LY = LevelCollisions[i].Center.y;
+	float LZ = LevelCollisions[i].Center.z;
 
-		float LXE = LevelCollisions[i].Extents.x;
-		float LYE = LevelCollisions[i].Extents.y;
-		float LZE = LevelCollisions[i].Extents.z;
+	float LXE = LevelCollisions[i].Extents.x;
+	float LYE = LevelCollisions[i].Extents.y;
+	float LZE = LevelCollisions[i].Extents.z;
 
-		/////////////fooling around with some collision idea's
+	/////////////fooling around with some collision idea's
 
-		//Player is to the left
-		if( mPlayerBox.Center.x<=LevelCollisions[i].Center.x ) {
-			tRight = (LevelCollisions[i].Center.x-LevelCollisions[i].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
-		}
-		//player is to the right of the object
-		if( mPlayerBox.Center.x>=LevelCollisions[i].Center.x ) {
-			tRight = (mPlayerBox.Center.x-mPlayerBox.Extents.x)-(LevelCollisions[i].Center.x+LevelCollisions[i].Extents.x);
-			toRight = true;
-		}
+	//Player is to the left
+	if( mPlayerBox.Center.x<=LevelCollisions[i].Center.x ) {
+	tRight = (LevelCollisions[i].Center.x-LevelCollisions[i].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
+	}
+	//player is to the right of the object
+	if( mPlayerBox.Center.x>=LevelCollisions[i].Center.x ) {
+	tRight = (mPlayerBox.Center.x-mPlayerBox.Extents.x)-(LevelCollisions[i].Center.x+LevelCollisions[i].Extents.x);
+	toRight = true;
+	}
 
-		///player is behind object
-		if( mPlayerBox.Center.z<=LevelCollisions[i].Center.z ) {
-			tForward = (LevelCollisions[i].Center.z-LevelCollisions[i].Extents.z)-(mPlayerBox.Center.z+mPlayerBox.Extents.z);
-		}
+	///player is behind object
+	if( mPlayerBox.Center.z<=LevelCollisions[i].Center.z ) {
+	tForward = (LevelCollisions[i].Center.z-LevelCollisions[i].Extents.z)-(mPlayerBox.Center.z+mPlayerBox.Extents.z);
+	}
 
-		//player is infront of object
-		if( mPlayerBox.Center.z>=LevelCollisions[i].Center.z ) {
-			tForward = (mPlayerBox.Center.z-mPlayerBox.Extents.z)-(LevelCollisions[i].Center.z+LevelCollisions[i].Extents.z);
-			inFront = true;
-		}
+	//player is infront of object
+	if( mPlayerBox.Center.z>=LevelCollisions[i].Center.z ) {
+	tForward = (mPlayerBox.Center.z-mPlayerBox.Extents.z)-(LevelCollisions[i].Center.z+LevelCollisions[i].Extents.z);
+	inFront = true;
+	}
 
-		///player is below the object
-		if( mPlayerBox.Center.y<=LevelCollisions[i].Center.y ) {
-			tUp = ((LevelCollisions[i].Center.y-LevelCollisions[i].Extents.y)-(mPlayerBox.Center.y+mPlayerBox.Extents.y)); //+ LevelCollisions[i].Extents.y);
-		}
+	///player is below the object
+	if( mPlayerBox.Center.y<=LevelCollisions[i].Center.y ) {
+	tUp = ((LevelCollisions[i].Center.y-LevelCollisions[i].Extents.y)-(mPlayerBox.Center.y+mPlayerBox.Extents.y)); //+ LevelCollisions[i].Extents.y);
+	}
 
 
-		//player is above the object
-		if( mPlayerBox.Center.y>=LevelCollisions[i].Center.y ) {
-			tUp = ((mPlayerBox.Center.y-mPlayerBox.Extents.y)-(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)); //- LevelCollisions[i].Extents.y);
-			Above = true;
-		}
+	//player is above the object
+	if( mPlayerBox.Center.y>=LevelCollisions[i].Center.y ) {
+	tUp = ((mPlayerBox.Center.y-mPlayerBox.Extents.y)-(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)); //- LevelCollisions[i].Extents.y);
+	Above = true;
+	}
 
-		FLOAT oldPos = XMVectorGetY( oldCharDirection );
-		FLOAT curPos = XMVectorGetY( currCharDirection );
+	FLOAT oldPos = XMVectorGetY( oldCharDirection );
+	FLOAT curPos = XMVectorGetY( currCharDirection );
 
-		FLOAT insideX = LevelCollisions[i].Center.x;
-		FLOAT insideZ = LevelCollisions[i].Center.z;
+	FLOAT insideX = LevelCollisions[i].Center.x;
+	FLOAT insideZ = LevelCollisions[i].Center.z;
 
-		FLOAT insideExtentX = LevelCollisions[i].Extents.x;
-		FLOAT insideExtentZ = LevelCollisions[i].Extents.z;
+	FLOAT insideExtentX = LevelCollisions[i].Extents.x;
+	FLOAT insideExtentZ = LevelCollisions[i].Extents.z;
 
-		insideX-+LevelCollisions[i].Extents.x;
-		insideZ-+LevelCollisions[i].Extents.z;
+	insideX-+LevelCollisions[i].Extents.x;
+	insideZ-+LevelCollisions[i].Extents.z;
 
-		//// if the player hits an object that trips him
-		if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==ctStumble ) {
-			tripDirection = direction;
-			isTripping = true;
-			break;
-		} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==3 ) {
-			things->RemovemObjectInstance( collobject );
-			break;
-		} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==ctEnemy && isImmune==true ) {
-			guys->RemovemObjectInstance( collEnemy );
-			break;
-		}
+	//// if the player hits an object that trips him
+	if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==ctStumble ) {
+	tripDirection = direction;
+	isTripping = true;
+	break;
+	} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==3 ) {
+	things->RemovemObjectInstance( collobject );
+	break;
+	} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && LevelCollisions[i].collisionType==ctEnemy && isImmune==true ) {
+	guys->RemovemObjectInstance( collEnemy );
+	break;
+	}
 
-		// if player hit their head
-		else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && isJump==true&&LevelCollisions[i].collisionType==0 ) {
-			int t = 3;
-			// these tell me where the player is verse the object it collided with
-			inFront;
-			Above;
-			toRight;
-			hitHead = true;
-			XMStoreFloat3( &mPlayerPosition, PP );
-			break;
-		}
+	// if player hit their head
+	else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && isJump==true&&LevelCollisions[i].collisionType==0 ) {
+	int t = 3;
+	// these tell me where the player is verse the object it collided with
+	inFront;
+	Above;
+	toRight;
+	hitHead = true;
+	XMStoreFloat3( &mPlayerPosition, PP );
+	break;
+	}
 
-		///if player lands on an object for the first time
-		else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && Above==true&&hitFeet==false&&LevelCollisions[i].collisionType==0
-			&&(mPlayerBox.Center.y-mPlayerBox.Extents.y)<(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)&&prevY>currY &&
-			prevY>(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)&&onGround==false ) {
-			int t = 3;
-			hitFeet = true;
+	///if player lands on an object for the first time
+	else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && Above==true&&hitFeet==false&&LevelCollisions[i].collisionType==0
+	&&(mPlayerBox.Center.y-mPlayerBox.Extents.y)<(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)&&prevY>currY &&
+	prevY>(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y)&&onGround==false ) {
+	int t = 3;
+	hitFeet = true;
 
-			insideX;
-			insideZ;
+	insideX;
+	insideZ;
 
-			currentObject = i;
-			currGround = XMVectorGetY( PP );
-			currGround += 0.1f;
-			onGround = true;
-			XMStoreFloat3( &mPlayerPosition, PP );
-			break;
+	currentObject = i;
+	currGround = XMVectorGetY( PP );
+	currGround += 0.1f;
+	onGround = true;
+	XMStoreFloat3( &mPlayerPosition, PP );
+	break;
 
-		} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && Above==true&&LevelCollisions[i].collisionType==0&&(mPlayerBox.Center.y-mPlayerBox.Extents.y)<(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y) ) {
-			int t = 3;
+	} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f && Above==true&&LevelCollisions[i].collisionType==0&&(mPlayerBox.Center.y-mPlayerBox.Extents.y)<(LevelCollisions[i].Center.y+LevelCollisions[i].Extents.y) ) {
+	int t = 3;
 
-			isTripping = false;
+	isTripping = false;
 
-			inFront;
-			Above;
-			toRight;
+	inFront;
+	Above;
+	toRight;
 
-			P;
-			PP;
+	P;
+	PP;
 
-			FLOAT originalPosX = XMVectorGetX( PP );
-			FLOAT originalPosZ = XMVectorGetZ( PP );
-			FLOAT newY = XMVectorGetY( P );
+	FLOAT originalPosX = XMVectorGetX( PP );
+	FLOAT originalPosZ = XMVectorGetZ( PP );
+	FLOAT newY = XMVectorGetY( P );
 
-			XMVectorSetZ( P, originalPosZ );
-			XMVectorSetZ( P, originalPosX );
+	XMVectorSetZ( P, originalPosZ );
+	XMVectorSetZ( P, originalPosX );
 
-			P = XMVectorSet( originalPosX, newY, originalPosZ, 0.0 );
+	P = XMVectorSet( originalPosX, newY, originalPosZ, 0.0 );
 
-			XMStoreFloat3( &mPlayerPosition, P );
-			break;
-		}
+	XMStoreFloat3( &mPlayerPosition, P );
+	break;
+	}
 
-		else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==0 ) {
-			int t = 3;
+	else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==0 ) {
+	int t = 3;
 
-			inFront;
-			Above;
-			toRight;
-			isTripping = false;
+	inFront;
+	Above;
+	toRight;
+	isTripping = false;
 
-			P;
-			PP;
+	P;
+	PP;
 
-			oldCharDirection = currCharDirection;
+	oldCharDirection = currCharDirection;
 
-			FLOAT originalPosX = XMVectorGetX( PP );
-			FLOAT originalPosZ = XMVectorGetZ( PP );
-			FLOAT newY = XMVectorGetY( P );
+	FLOAT originalPosX = XMVectorGetX( PP );
+	FLOAT originalPosZ = XMVectorGetZ( PP );
+	FLOAT newY = XMVectorGetY( P );
 
-			XMVectorSetZ( P, originalPosZ );
-			XMVectorSetZ( P, originalPosX );
+	XMVectorSetZ( P, originalPosZ );
+	XMVectorSetZ( P, originalPosX );
 
-			P = XMVectorSet( originalPosX, newY, originalPosZ, 0.0 );
-			XMStoreFloat3( &mPlayerPosition, P );
+	P = XMVectorSet( originalPosX, newY, originalPosZ, 0.0 );
+	XMStoreFloat3( &mPlayerPosition, P );
 
-			break;
-		} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==1&&isImmune==false ) {
-			isAlive = false;
-			break;
-		} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==ctUnkillable ) {
-			isAlive = false;
-			break;
-		} else if( isAlive==true ) {
-			// Set the characters old direction
-			XMStoreFloat3( &mPlayerPosition, P );
-			XMStoreFloat4( &mPlayerRotationQuad, Q );
-		}
-		oldCharDirection = currCharDirection;
+	break;
+	} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==1&&isImmune==false ) {
+	isAlive = false;
+	break;
+	} else if( tRight<=0.0f && tUp<=0.0f && tForward<=0.0f  && LevelCollisions[i].collisionType==ctUnkillable ) {
+	isAlive = false;
+	break;
+	} else if( isAlive==true ) {
+	// Set the characters old direction
+	XMStoreFloat3( &mPlayerPosition, P );
+	XMStoreFloat4( &mPlayerRotationQuad, Q );
+	}
+	oldCharDirection = currCharDirection;
 
-		if( LevelCollisions[i].collisionType==2||LevelCollisions[i].collisionType==3 ) {
-			collobject++;
-		}
+	if( LevelCollisions[i].collisionType==2||LevelCollisions[i].collisionType==3 ) {
+	collobject++;
+	}
 
-		if( LevelCollisions[i].collisionType==1 ) {
-			collEnemy++;
-		}
+	if( LevelCollisions[i].collisionType==1 ) {
+	collEnemy++;
+	}
 
 	}
 
@@ -582,31 +586,31 @@ void Player::move( float dt, XMVECTOR direction ) {
 
 	//Player is to the left
 	if( mPlayerBox.Center.x<=LevelCollisions[currentObject].Center.x ) {
-		tRight = (LevelCollisions[currentObject].Center.x-LevelCollisions[currentObject].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
+	tRight = (LevelCollisions[currentObject].Center.x-LevelCollisions[currentObject].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
 	}
 	//player is to the right of the object
 	if( mPlayerBox.Center.x>=LevelCollisions[currentObject].Center.x ) {
-		tRight = (mPlayerBox.Center.x-mPlayerBox.Extents.x)-(LevelCollisions[currentObject].Center.x+LevelCollisions[currentObject].Extents.x);
-		toRight = true;
+	tRight = (mPlayerBox.Center.x-mPlayerBox.Extents.x)-(LevelCollisions[currentObject].Center.x+LevelCollisions[currentObject].Extents.x);
+	toRight = true;
 	}
 
 	///player is behind object
 	if( mPlayerBox.Center.z<=LevelCollisions[currentObject].Center.z ) {
-		tForward = (LevelCollisions[currentObject].Center.z-LevelCollisions[currentObject].Extents.z)-(mPlayerBox.Center.z+mPlayerBox.Extents.z);
+	tForward = (LevelCollisions[currentObject].Center.z-LevelCollisions[currentObject].Extents.z)-(mPlayerBox.Center.z+mPlayerBox.Extents.z);
 	}
 	//player is infront of object
 	if( mPlayerBox.Center.z>=LevelCollisions[currentObject].Center.z ) {
-		tForward = (mPlayerBox.Center.z-mPlayerBox.Extents.z)-(LevelCollisions[currentObject].Center.z+LevelCollisions[currentObject].Extents.z);
-		inFront = true;
+	tForward = (mPlayerBox.Center.z-mPlayerBox.Extents.z)-(LevelCollisions[currentObject].Center.z+LevelCollisions[currentObject].Extents.z);
+	inFront = true;
 	}
 
 	if( tRight>0.0f||tForward>0.0f ) {
-		isFalling = true;
-		hitFeet = false;
-		onGround = false;
-		if( currentObject==0 ) {
-			fellOffMap = true;
-		}
+	isFalling = true;
+	hitFeet = false;
+	onGround = false;
+	if( currentObject==0 ) {
+	fellOffMap = true;
+	}
 	}
 	*/
 
@@ -776,7 +780,7 @@ void Player::Idle_Update( float dt ) {
 	if( desiredDirection.y>0.5 ) {
 		fsm->ChangeState( FSM_STATE::STATE_JUMP );
 	}
-	if( collisions[ctEnemy] || collisions[ctUnkillable]) {
+	if( collisions[ctEnemy]||collisions[ctUnkillable] ) {
 		fsm->ChangeState( FSM_STATE::STATE_DIE );
 	}
 }

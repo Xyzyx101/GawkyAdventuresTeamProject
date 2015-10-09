@@ -22,6 +22,7 @@ cbuffer cbPerObject
 {
 	float4x4 gWorld;
 	float4x4 gWorldInvTranspose;
+	float4x4 gViewProj;
 	float4x4 gWorldViewProj;
 	float4x4 gTexTransform;
 	Material gMaterial;
@@ -70,6 +71,9 @@ struct VertexOut
 	float2 Tex     : TEXCOORD;
 	float4 Debug   : COLOR1;
 };
+
+float gawkyLineThickness = 0.003f;
+float objectLineThickness = 0.2f;
 
 VertexOut VS(VertexIn vin)
 {
@@ -221,174 +225,406 @@ float4 PS(VertexOut pin,
     return litColor;
 }
 
+VertexOut OutlineVS( VertexIn vin ) {
+	VertexOut vout;
+
+	vin.NormalL = normalize( vin.NormalL.xyz );
+
+	// Transform to world space space.
+	float3 original = mul( float4(vin.PosL, 1.0f), gWorld ).xyz;
+	vout.NormalW = mul( vin.NormalL, (float3x3)gWorldInvTranspose );
+	vout.PosW = original+mul( objectLineThickness, vout.NormalW );
+
+	// Transform to homogeneous clip space.
+	vout.PosH = mul( float4(vout.PosW, 1.f), gViewProj );
+
+	// Output vertex attributes for interpolation across triangle.
+	vout.Tex = mul( float4(vin.Tex, 0.0f, 1.0f), gTexTransform ).xy;
+
+	vout.Debug = float4(original, 1.f);
+
+	return vout;
+}
+
+VertexOut OutlineSkinnedVS( SkinnedVertexIn vin ) {
+	VertexOut vout;
+
+	// Init array or else we get strange warnings about SV_POSITION.
+	float weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	weights[0] = vin.Weights.x;
+	weights[1] = vin.Weights.y;
+	weights[2] = vin.Weights.z;
+	weights[3] = 1.0f-weights[0]-weights[1]-weights[2];
+
+	vin.NormalL = normalize( vin.NormalL.xyz );
+
+	float3 posL = float3(0.0f, 0.0f, 0.0f);
+		float3 normalL = float3(0.0f, 0.0f, 0.0f);
+		float3 tangentL = float3(0.0f, 0.0f, 0.0f);
+		for( int i = 0; i < 4; ++i ) {
+			// Assume no nonuniform scaling when transforming normals, so 
+			// that we do not have to use the inverse-transpose.
+
+			posL += weights[i]*mul( float4(vin.PosL, 1.0f), gBoneTransforms[vin.BoneIndices[i]] ).xyz;
+			normalL += weights[i]*mul( vin.NormalL, (float3x3)gBoneTransforms[vin.BoneIndices[i]] );
+			tangentL += weights[i]*mul( vin.TangentL.xyz, (float3x3)gBoneTransforms[vin.BoneIndices[i]] );
+		}
+
+	// Transform to world space space.
+	float3 original = mul( float4(posL, 1.0f), gWorld ).xyz;
+	vout.NormalW = mul( normalL, (float3x3)gWorldInvTranspose );
+	vout.PosW = original+mul( gawkyLineThickness, vout.NormalW );
+
+	// Transform to homogeneous clip space.
+	vout.PosH = mul( float4(vout.PosW, 1.f), gViewProj );
+	
+	// Output vertex attributes for interpolation across triangle.
+	vout.Tex = mul( float4(vin.Tex, 0.0f, 1.0f), gTexTransform ).xy;
+
+	vout.Debug = float4(vout.PosW, 0.f);//float4(gBoneTransforms[4]._m30, gBoneTransforms[4]._m31, gBoneTransforms[4]._m32, 1.f);
+
+	return vout;
+}
+
+float4 OutlinePS( VertexOut pin) : SV_Target
+{
+	float4 texColor = gDiffuseMap.Sample( samAnisotropic, pin.Tex );
+	
+	float4 litColor = 0.05f * texColor;
+		
+	// Common to take alpha from diffuse material and texture.
+	litColor.a = gMaterial.Diffuse.a * texColor.a;
+
+	//return pin.Debug;
+	return litColor;
+}
+
+float4 CelShadePS( VertexOut pin) : SV_Target
+{
+	// Interpolating normal can unnormalize it, so normalize it.
+	pin.NormalW = normalize( pin.NormalW );
+
+	// The toEye vector is used in lighting.
+	float3 toEye = gEyePosW-pin.PosW;
+
+	// Cache the distance to the eye from this surface point.
+	float distToEye = length( toEye );
+
+	// Normalize.
+	toEye /= distToEye;
+
+	// Default to multiplicative identity.
+	float4 texColor = gDiffuseMap.Sample( samAnisotropic, pin.Tex );
+
+	float4 litColor = texColor;
+		
+	float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	ComputeDirectionalLight( gMaterial, gDirLights[0], pin.NormalW, toEye,	ambient, diffuse, spec );
+
+	if( diffuse.x>0.3f ) {
+		litColor = float4(1.f, 1.f, 1.f, 1.f) * texColor;
+	} else if( diffuse.x>0.05f ) {
+		litColor = float4(0.8f, 0.8f, 0.8f, 1.f) * texColor;
+	} else {
+		litColor = float4(0.1f, 0.1f, 0.1f, 1.f) * texColor;
+	}
+
+	if( spec.r>0.15f ) {
+		litColor = lerp( texColor, float4(1.f, 1.f, 1.f, 1.f), 0.5f ); 
+	}
+
+	return litColor;
+}
+
+RasterizerState CW {
+	FrontCounterClockwise = FALSE;
+};
+RasterizerState CCW {
+	FrontCounterClockwise = TRUE;
+};
+
 technique11 Light1
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(1, false, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light2
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(2, false, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light3
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(3, false, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light0Tex
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(0, true, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light1Tex
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(1, true, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light2Tex
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(2, true, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light3Tex
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(3, true, false, false, false) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light1Reflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(1, false, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light2Reflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(2, false, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light3Reflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(3, false, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light0TexReflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(0, true, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light1TexReflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(1, true, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light2TexReflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(2, true, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light3TexReflect
 {
-    pass P0
-    {
-        SetVertexShader( CompileShader( vs_5_0, VS() ) );
+	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineVS()) );
 		SetGeometryShader( NULL );
-        SetPixelShader( CompileShader( ps_5_0, PS(3, true, false, false, true) ) );
-    }
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
+		SetVertexShader( CompileShader(vs_5_0, VS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
+	}
 }
 
 technique11 Light0TexSkinned {
 	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineSkinnedVS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
 		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader(ps_5_0, PS( 0, true, false, false, false )) );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
 	}
 }
 
 technique11 Light1TexSkinned {
 	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineSkinnedVS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
 		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader(ps_5_0, PS( 1, true, false, false, false )) );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
 	}
 }
 
 technique11 Light2TexSkinned {
 	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineSkinnedVS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
 		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader(ps_5_0, PS( 2, true, false, false, false )) );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
 	}
 }
 
 technique11 Light3TexSkinned {
 	pass P0 {
+		SetVertexShader( CompileShader(vs_5_0, OutlineSkinnedVS()) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader(ps_5_0, OutlinePS()) );
+		SetRasterizerState( CCW );
+	}
+	pass P1 {
 		SetVertexShader( CompileShader(vs_5_0, SkinnedVS()) );
 		SetGeometryShader( NULL );
-		SetPixelShader( CompileShader(ps_5_0, PS( 3, true, false, false, false )) );
+		SetPixelShader( CompileShader(ps_5_0, CelShadePS()) );
+		SetRasterizerState( CW );
 	}
 }

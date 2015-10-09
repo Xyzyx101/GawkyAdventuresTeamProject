@@ -130,6 +130,7 @@ public:
 	GawkyEffect( ID3D11Device* device, const std::wstring& filename );
 	~GawkyEffect();
 
+	void SetViewProj( CXMMATRIX M ) { ViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
@@ -164,6 +165,7 @@ public:
 	ID3DX11EffectTechnique* Light2TexSkinnedTech;
 	ID3DX11EffectTechnique* Light3TexSkinnedTech;
 
+	ID3DX11EffectMatrixVariable* ViewProj;
 	ID3DX11EffectMatrixVariable* WorldViewProj;
 	ID3DX11EffectMatrixVariable* WorldViewProjTex;
 	ID3DX11EffectMatrixVariable* World;
