@@ -281,7 +281,7 @@ VertexOut OutlineSkinnedVS( SkinnedVertexIn vin ) {
 	// Output vertex attributes for interpolation across triangle.
 	vout.Tex = mul( float4(vin.Tex, 0.0f, 1.0f), gTexTransform ).xy;
 
-	vout.Debug = float4(vout.PosW, 0.f);//float4(gBoneTransforms[4]._m30, gBoneTransforms[4]._m31, gBoneTransforms[4]._m32, 1.f);
+	vout.Debug = float4(vout.PosW, 0.f);
 
 	return vout;
 }
