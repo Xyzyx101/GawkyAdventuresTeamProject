@@ -34,6 +34,7 @@ void Controller::InitControllerInput(HWND hWnd) {
 }
 
 void Controller::CheckControllerState(HWND hWnd) {
+
 	if (!mIsControllerConnected) { return; }
 	UINT64 currentTime = ::GetTickCount64();
 	if (currentTime - mLastEnumTime < XINPUT_ENUM_TIMEOUT_MS) {
@@ -68,9 +69,10 @@ void Controller::CheckControllerState(HWND hWnd) {
 		magnitudeL -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeL = magnitudeL / (32767 - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
-		if (magnitudeL > 4890 && magnitudeL < 4900) {
+		if (magnitudeL > 5000 && magnitudeL < 8000) {
 			SoundSystem::Play(SOUND::PICKUP);
 		}
+
 	}
 	else {
 		magnitudeL = 0.0;
@@ -102,11 +104,10 @@ void Controller::CheckControllerState(HWND hWnd) {
 	}
 
 	XMVECTOR jumpUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-	XMVECTOR flyUp = XMVectorSet(0.0f, 0.2f, 0.0f, 0.0f);
 
 	switch (mControllerState.Gamepad.wButtons) {
 	case XINPUT_GAMEPAD_A :					// A-Button
-
+		mCharDirection = mCharDirection + jumpUp;
 		break;
 	case XINPUT_GAMEPAD_B :					// B-Button
 		SoundSystem::Play(SOUND::QUACK);
@@ -130,10 +131,9 @@ void Controller::CheckControllerState(HWND hWnd) {
 		Vibrate(65535, 65535);
 		break;
 	case XINPUT_GAMEPAD_LEFT_SHOULDER :		// Left-Upper Trigger
-		SoundSystem::Play(SOUND::PICKUP);
 		break;
 	case XINPUT_GAMEPAD_RIGHT_SHOULDER :		// Right-Upper Trigger
-			mCharDirection = mCharDirection + flyUp;
+
 		break;
 	default:
 		break;

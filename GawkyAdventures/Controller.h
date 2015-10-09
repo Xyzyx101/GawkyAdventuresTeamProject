@@ -19,7 +19,7 @@ public:
 private:
 	Player*					mPlayer;				// hold player
 	Camera*					mCamOne;				// hold camera 
-	XMVECTOR				mCharDirection;
+	XMVECTOR				mCharDirection;			//
 	bool					mIsControllerConnected;	// is a controller connected?
 	XINPUT_STATE			mControllerState;		// state of controller
 	XINPUT_CAPABILITIES		mControllerCap;			// holding controller capabilities
