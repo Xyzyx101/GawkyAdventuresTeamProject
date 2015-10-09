@@ -1,11 +1,14 @@
 #pragma once
 
+#include <array>
 #include "d3dUtil.h"
 #include "xnacollision.h"
 #include "BasicModel.h"
 #include "Model.h"
 #include "Skeleton.h"
 #include "AnimationController.h"
+#include "ModelEnum.h"
+#include "FSM.h"
 
 class Camera;
 class Enemies;
@@ -21,9 +24,9 @@ public:
 	~Player();
 	bool init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr, const std::wstring& texturePath );
 
-	void move(float dt, XMVECTOR direction, Enemies* guys,TheObjects* things);
-	void update();
-	void updateCollisions();
+	void move(float dt, XMVECTOR direction/*, Enemies* guys,TheObjects* things*/);
+	void update( float dt, XMVECTOR direction, Enemies* guys, TheObjects* things );
+	void updateCollisions( Enemies* guys, TheObjects* things );
 
 	void setMoveDirection(XMVECTOR mDirection);
 
@@ -37,6 +40,27 @@ public:
 	void drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTechnique* activeTexTech);
 
 private:
+	// FSM functions
+	FSM<Player>* fsm;
+	void initFSM();
+	void Idle_Before( float dt );
+	void Idle_Update( float dt );
+	void Idle_After( float dt );
+	void Walk_Before( float dt );
+	void Walk_Update( float dt );
+	void Walk_After( float dt );
+	void Jump_Before( float dt );
+	void Jump_Update( float dt );
+	void Jump_After( float dt );
+	void Fall_Before( float dt );
+	void Fall_Update( float dt );
+	void Fall_After( float dt );
+	void Trip_Before( float dt );
+	void Trip_Update( float dt );
+	void Trip_After( float dt );
+	void Die_Before( float dt );
+	void Die_Update( float dt );
+	
 	Model mModel;
 	Material mMaterial;
 	Skeleton skeleton;
@@ -85,8 +109,8 @@ private:
 
 	// Bounding box of the Player
 	XNA::AxisAlignedBox mPlayerBox;
-
 	std::vector <XNA::AxisAlignedBox> LevelCollisions;
+	std::array<bool, (int)Collisiontype::_COLLISION_TYPE_COUNT> collisions;
 	
 	///////////// the Players states
 	bool isAlive;

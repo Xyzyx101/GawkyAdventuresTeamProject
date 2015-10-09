@@ -726,9 +726,9 @@ void Game::UpdateScene(float dt)
 
 	mCam.moveCam();
 
-	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
+	//PlayerOne->move();
 
-	PlayerOne->update();
+	PlayerOne->update( dt, desiredCharDir, theEnemies, Objects );
 
 }
 

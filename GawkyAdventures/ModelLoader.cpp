@@ -27,7 +27,7 @@ bool ModelLoader::Load( ID3D11Device* device, const std::string& filename, Verte
 	scene = importer.ReadFile( filename,
 		aiProcess_CalcTangentSpace|
 		aiProcess_ImproveCacheLocality|
-		//aiProcess_MakeLeftHanded|
+		aiProcess_MakeLeftHanded|
 		aiProcess_FlipWindingOrder|
 		aiProcess_Triangulate|
 		aiProcess_JoinIdenticalVertices|
