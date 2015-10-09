@@ -30,7 +30,7 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
-
+	void Circle(float x, float y, float z, float r);
 	void OnMouseDown(WPARAM btnState, int x, int y);
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
@@ -41,7 +41,7 @@ private:
 
 	Sky* mSky;
 	
-
+	ID3DX11EffectVectorVariable* fxColorVar;
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
@@ -355,9 +355,6 @@ bool Game::Init(HINSTANCE hInstance)
 
 	Level1->createLevelParts(woodpile, -130 + x2o, 4 + y2o, -127 + z2o, ctLevel, 1, 1.57);
 
-
-
-
 	Objects->createObject(branch, 20 + x2o, -3 + y2o, -70 + z2o, ctStumble, 1);
 
 	Objects->createObject(orange, 54 + x2o, 4 + y2o, 32 + z2o, ctCollect, 1);
@@ -444,10 +441,10 @@ void Game::DrawScene()
 
 	// Set per frame constants.
 	Effects::GawkyFX->SetDirLights(mDirLights);
-	Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
 	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
+	Effects::GawkyFX->SetPlayerPos(PlayerOne->getPlayerPosition());
+	//fxColorVar->SetFloatVector((float*)&mPlayerPosition);
 	
-
 	// Figure out which technique to use.  Skull does not have texture coordinates,
 	// so we need a separate technique for it, and not every surface is reflective,
 	// so don't pay for cubemap look up.
@@ -501,7 +498,10 @@ void Game::DrawScene()
 }
 
 
+void Game::Circle(float x, float y, float z, float r)
+{
 
+}
 
 ///the mouse functions are not being used
 void Game::OnMouseDown(WPARAM btnState, int x, int y)

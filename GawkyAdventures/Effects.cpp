@@ -277,6 +277,7 @@ GawkyEffect::GawkyEffect( ID3D11Device* device, const std::wstring& filename )
 	Light2TexSkinnedTech = mFX->GetTechniqueByName( "Light2TexSkinned" );
 	Light3TexSkinnedTech = mFX->GetTechniqueByName( "Light2TexSkinned" );
 
+	PlayerPos = mFX->GetVariableByName("gPlayerPos")->AsVector();
 	WorldViewProj = mFX->GetVariableByName( "gWorldViewProj" )->AsMatrix();
 	World = mFX->GetVariableByName( "gWorld" )->AsMatrix();
 	WorldInvTranspose = mFX->GetVariableByName( "gWorldInvTranspose" )->AsMatrix();

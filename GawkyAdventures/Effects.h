@@ -130,14 +130,15 @@ public:
 	GawkyEffect( ID3D11Device* device, const std::wstring& filename );
 	~GawkyEffect();
 
-	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
-	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
-	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
-	void SetWorldInvTranspose( CXMMATRIX M ) { WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
-	void SetTexTransform( CXMMATRIX M ) { TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
-	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
-	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
-	void SetPointLights( const PointLight* lights ) { PLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetPlayerPos(XMFLOAT3& v)						{ PlayerPos->SetRawValue (&v, 0, sizeof(XMFLOAT3)); }
+	void SetWorldViewProj( CXMMATRIX M )				{ WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldViewProjTex( CXMMATRIX M )				{ WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorld( CXMMATRIX M )						{ World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldInvTranspose( CXMMATRIX M )			{ WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetTexTransform( CXMMATRIX M )					{ TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetEyePosW( const XMFLOAT3& v )				{ EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetDirLights( const DirectionalLight* lights )	{ DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetPointLights( const PointLight* lights )		{ PLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
 	
 	void SetBoneTransforms( const XMFLOAT4X4* M, int cnt ) { BoneTransforms->SetMatrixArray( reinterpret_cast<const float*>(M), 0, cnt ); }
 	
@@ -164,6 +165,7 @@ public:
 	ID3DX11EffectTechnique* Light2TexSkinnedTech;
 	ID3DX11EffectTechnique* Light3TexSkinnedTech;
 
+	ID3DX11EffectVectorVariable* PlayerPos;
 	ID3DX11EffectMatrixVariable* WorldViewProj;
 	ID3DX11EffectMatrixVariable* WorldViewProjTex;
 	ID3DX11EffectMatrixVariable* World;
