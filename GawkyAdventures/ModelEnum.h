@@ -14,7 +14,9 @@ enum Collisiontype {
 	ctEnemy = 1,
 	ctStumble = 2,
 	ctCollect = 3,
-	ctUnkillable,
-	ctPlayer = 99,
-	ctNothing };
+	ctUnkillable = 4,
+	ctPlayer = 5,
+	ctNothing = 6,
+	_COLLISION_TYPE_COUNT
+};
 

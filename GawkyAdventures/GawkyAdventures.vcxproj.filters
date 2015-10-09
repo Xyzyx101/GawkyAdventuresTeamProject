@@ -268,7 +268,11 @@
     <ClInclude Include="SoundSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Controller.h">
+=======
+    <ClInclude Include="FSM.h">
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

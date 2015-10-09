@@ -31,7 +31,7 @@ public:
 	void OnResize();
 	void UpdateScene(float dt);
 	void DrawScene();
-
+	void Circle(float x, float y, float z, float r);
 	void OnMouseDown(WPARAM btnState, int x, int y);
 	void OnMouseUp(WPARAM btnState, int x, int y);
 	void OnMouseMove(WPARAM btnState, int x, int y);
@@ -41,8 +41,13 @@ public:
 private:
 
 	Sky* mSky;
+<<<<<<< HEAD
 	Controller* mController;
 
+=======
+	
+	ID3DX11EffectVectorVariable* fxColorVar;
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
@@ -114,7 +119,7 @@ Game::Game(HINSTANCE hInstance)
 	
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	mDirLights[0].Diffuse = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+	mDirLights[0].Diffuse = XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f);
 	mDirLights[0].Specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 	mDirLights[0].Direction = XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
 
@@ -356,9 +361,6 @@ bool Game::Init(HINSTANCE hInstance)
 
 	Level1->createLevelParts(woodpile, -130 + x2o, 4 + y2o, -127 + z2o, ctLevel, 1, 1.57);
 
-
-
-
 	Objects->createObject(branch, 20 + x2o, -3 + y2o, -70 + z2o, ctStumble, 1);
 
 	Objects->createObject(orange, 54 + x2o, 4 + y2o, 32 + z2o, ctCollect, 1);
@@ -446,10 +448,14 @@ void Game::DrawScene()
 
 	// Set per frame constants.
 	Effects::GawkyFX->SetDirLights(mDirLights);
+<<<<<<< HEAD
 	// Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
+=======
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
+	Effects::GawkyFX->SetPlayerPos(PlayerOne->getPlayerPosition());
+	//fxColorVar->SetFloatVector((float*)&mPlayerPosition);
 	
-
 	// Figure out which technique to use.  Skull does not have texture coordinates,
 	// so we need a separate technique for it, and not every surface is reflective,
 	// so don't pay for cubemap look up.
@@ -503,7 +509,10 @@ void Game::DrawScene()
 }
 
 
+void Game::Circle(float x, float y, float z, float r)
+{
 
+}
 
 ///the mouse functions are not being used
 void Game::OnMouseDown(WPARAM btnState, int x, int y)
@@ -653,14 +662,48 @@ void Game::UpdateScene(float dt)
 		desiredCharDir += -(camRight);
 		moveChar = true;
 	}
+<<<<<<< HEAD
 	if (PlayerOne->getOnGround() == true)
+=======
+
+
+	if (GetAsyncKeyState('Q') & 0x8000)
 	{
-		if (GetAsyncKeyState( VK_SPACE ))
-		{
+		float dy = 1.5 * dt;
+		mCam.RotateY(-dy);
+	}
+
+	if (GetAsyncKeyState('E') & 0x8000)
+	{
+
+		float dy = 1.5 * dt;
+		mCam.RotateY(dy);
+	}
+
+
+	if (GetAsyncKeyState('R') & 0x8000)
+	{
+		float dy = 0.25 * dt;
+		mCam.Pitch(dy);
+	}
+
+	if (GetAsyncKeyState('F') & 0x8000)
+	{
+		float dy = 0.25 * dt;
+		mCam.Pitch(-dy);
+	}
+
+	if (GetAsyncKeyState( VK_SPACE ))
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
+	{
 			desiredCharDir += camUp;
 			moveChar = true;
+<<<<<<< HEAD
 			SoundSystem::Play(SOUND::SAYQUACK);
 		}
+=======
+			SoundSystem::Play(QUACK);
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	}
 
 	mController->CheckControllerState(mhMainWnd);
@@ -670,6 +713,10 @@ void Game::UpdateScene(float dt)
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
+<<<<<<< HEAD
+=======
+	/*
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
 	if (PlayerOne->getOnGround() == true)
 	{
@@ -679,10 +726,14 @@ void Game::UpdateScene(float dt)
 	{
 		desiredCharDir += addGravity;
 	}
+<<<<<<< HEAD
 
 	
 	
 	
+=======
+	*/
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	//		
 	// Switch the number of lights based on key presses.
 	//
@@ -707,12 +758,20 @@ void Game::UpdateScene(float dt)
 	mCam.getDeltaTime(dt);
 
 	mCam.moveCam();
+<<<<<<< HEAD
 	
 	
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
 	mController->ResetSettings();
+=======
+
+	//PlayerOne->move();
+
+	PlayerOne->update( dt, desiredCharDir, theEnemies, Objects );
+
+>>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 }
 
 void Game::addDeltaTime(float dt)

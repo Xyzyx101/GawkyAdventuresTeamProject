@@ -11,14 +11,13 @@
 #include "d3dUtil.h"
 
 #pragma region Effect
-class Effect
-{
+class Effect {
 public:
-	Effect(ID3D11Device* device, const std::wstring& filename);
+	Effect( ID3D11Device* device, const std::wstring& filename );
 	virtual ~Effect();
 
 private:
-	Effect(const Effect& rhs);
+	Effect( const Effect& rhs );
 	Effect& operator=(const Effect& rhs);
 
 protected:
@@ -27,28 +26,27 @@ protected:
 #pragma endregion
 
 #pragma region BasicEffect
-class BasicEffect : public Effect
-{
+class BasicEffect : public Effect {
 public:
-	BasicEffect(ID3D11Device* device, const std::wstring& filename);
+	BasicEffect( ID3D11Device* device, const std::wstring& filename );
 	~BasicEffect();
 
-	void SetWorldViewProj(CXMMATRIX M)                  { WorldViewProj->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorldViewProjTex(CXMMATRIX M)               { WorldViewProjTex->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorld(CXMMATRIX M)                          { World->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorldInvTranspose(CXMMATRIX M)              { WorldInvTranspose->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetTexTransform(CXMMATRIX M)                   { TexTransform->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetEyePosW(const XMFLOAT3& v)                  { EyePosW->SetRawValue(&v, 0, sizeof(XMFLOAT3)); }
-	void SetFogColor(const FXMVECTOR v)                 { FogColor->SetFloatVector(reinterpret_cast<const float*>(&v)); }
-	void SetFogStart(float f)                           { FogStart->SetFloat(f); }
-	void SetFogRange(float f)                           { FogRange->SetFloat(f); }
-	void SetDirLights(const DirectionalLight* lights)   { DirLights->SetRawValue(lights, 0, 3 * sizeof(DirectionalLight)); }
-	void SetPointLights(const PointLight* lights)		 { PLights->SetRawValue(lights, 0, 3 * sizeof(DirectionalLight)); }
-	
-	
-	void SetMaterial(const Material& mat)               { Mat->SetRawValue(&mat, 0, sizeof(Material)); }
-	void SetDiffuseMap(ID3D11ShaderResourceView* tex)   { DiffuseMap->SetResource(tex); }
-	void SetCubeMap(ID3D11ShaderResourceView* tex)      { CubeMap->SetResource(tex); }
+	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldInvTranspose( CXMMATRIX M ) { WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetTexTransform( CXMMATRIX M ) { TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetFogColor( const FXMVECTOR v ) { FogColor->SetFloatVector( reinterpret_cast<const float*>(&v) ); }
+	void SetFogStart( float f ) { FogStart->SetFloat( f ); }
+	void SetFogRange( float f ) { FogRange->SetFloat( f ); }
+	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetPointLights( const PointLight* lights ) { PLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+
+
+	void SetMaterial( const Material& mat ) { Mat->SetRawValue( &mat, 0, sizeof( Material ) ); }
+	void SetDiffuseMap( ID3D11ShaderResourceView* tex ) { DiffuseMap->SetResource( tex ); }
+	void SetCubeMap( ID3D11ShaderResourceView* tex ) { CubeMap->SetResource( tex ); }
 
 	ID3DX11EffectTechnique* Light1Tech;
 	ID3DX11EffectTechnique* Light2Tech;
@@ -130,6 +128,8 @@ public:
 	GawkyEffect( ID3D11Device* device, const std::wstring& filename );
 	~GawkyEffect();
 
+	void SetPlayerPos( XMFLOAT3& v ) { PlayerPos->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetViewProj( CXMMATRIX M ) { ViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
 	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
@@ -138,9 +138,7 @@ public:
 	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
 	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
 	void SetPointLights( const PointLight* lights ) { PLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
-	
 	void SetBoneTransforms( const XMFLOAT4X4* M, int cnt ) { BoneTransforms->SetMatrixArray( reinterpret_cast<const float*>(M), 0, cnt ); }
-	
 	void SetMaterial( const Material& mat ) { Mat->SetRawValue( &mat, 0, sizeof( Material ) ); }
 	void SetDiffuseMap( ID3D11ShaderResourceView* tex ) { DiffuseMap->SetResource( tex ); }
 	void SetCubeMap( ID3D11ShaderResourceView* tex ) { CubeMap->SetResource( tex ); }
@@ -164,6 +162,8 @@ public:
 	ID3DX11EffectTechnique* Light2TexSkinnedTech;
 	ID3DX11EffectTechnique* Light3TexSkinnedTech;
 
+	ID3DX11EffectMatrixVariable* ViewProj;
+	ID3DX11EffectVectorVariable* PlayerPos;
 	ID3DX11EffectMatrixVariable* WorldViewProj;
 	ID3DX11EffectMatrixVariable* WorldViewProjTex;
 	ID3DX11EffectMatrixVariable* World;
@@ -183,30 +183,29 @@ public:
 
 
 #pragma region NormalMapEffect
-class NormalMapEffect : public Effect
-{
+class NormalMapEffect : public Effect {
 public:
-	NormalMapEffect(ID3D11Device* device, const std::wstring& filename);
+	NormalMapEffect( ID3D11Device* device, const std::wstring& filename );
 	~NormalMapEffect();
 
-	void SetWorldViewProj(CXMMATRIX M)                  { WorldViewProj->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorldViewProjTex(CXMMATRIX M)               { WorldViewProjTex->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorld(CXMMATRIX M)                          { World->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorldInvTranspose(CXMMATRIX M)              { WorldInvTranspose->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetShadowTransform(CXMMATRIX M)                { ShadowTransform->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetTexTransform(CXMMATRIX M)                   { TexTransform->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetEyePosW(const XMFLOAT3& v)                  { EyePosW->SetRawValue(&v, 0, sizeof(XMFLOAT3)); }
-	void SetFogColor(const FXMVECTOR v)                 { FogColor->SetFloatVector(reinterpret_cast<const float*>(&v)); }
-	void SetFogStart(float f)                           { FogStart->SetFloat(f); }
-	void SetFogRange(float f)                           { FogRange->SetFloat(f); }
-	void SetDirLights(const DirectionalLight* lights)   { DirLights->SetRawValue(lights, 0, 3 * sizeof(DirectionalLight)); }
-	void SetPointLights(const PointLight* lights)		{ PLights->SetRawValue(lights, 0, 3 * sizeof(PointLight)); }
-	void SetMaterial(const Material& mat)               { Mat->SetRawValue(&mat, 0, sizeof(Material)); }
-	void SetDiffuseMap(ID3D11ShaderResourceView* tex)   { DiffuseMap->SetResource(tex); }
-	void SetCubeMap(ID3D11ShaderResourceView* tex)      { CubeMap->SetResource(tex); }
-	void SetNormalMap(ID3D11ShaderResourceView* tex)    { NormalMap->SetResource(tex); }
-	void SetSsaoMap(ID3D11ShaderResourceView* tex)      { SsaoMap->SetResource(tex); }
-	void SetShadowMap(ID3D11ShaderResourceView* tex)    { ShadowMap->SetResource(tex); }
+	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldViewProjTex( CXMMATRIX M ) { WorldViewProjTex->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldInvTranspose( CXMMATRIX M ) { WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetShadowTransform( CXMMATRIX M ) { ShadowTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetTexTransform( CXMMATRIX M ) { TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetFogColor( const FXMVECTOR v ) { FogColor->SetFloatVector( reinterpret_cast<const float*>(&v) ); }
+	void SetFogStart( float f ) { FogStart->SetFloat( f ); }
+	void SetFogRange( float f ) { FogRange->SetFloat( f ); }
+	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetPointLights( const PointLight* lights ) { PLights->SetRawValue( lights, 0, 3*sizeof( PointLight ) ); }
+	void SetMaterial( const Material& mat ) { Mat->SetRawValue( &mat, 0, sizeof( Material ) ); }
+	void SetDiffuseMap( ID3D11ShaderResourceView* tex ) { DiffuseMap->SetResource( tex ); }
+	void SetCubeMap( ID3D11ShaderResourceView* tex ) { CubeMap->SetResource( tex ); }
+	void SetNormalMap( ID3D11ShaderResourceView* tex ) { NormalMap->SetResource( tex ); }
+	void SetSsaoMap( ID3D11ShaderResourceView* tex ) { SsaoMap->SetResource( tex ); }
+	void SetShadowMap( ID3D11ShaderResourceView* tex ) { ShadowMap->SetResource( tex ); }
 
 	ID3DX11EffectTechnique* Light1Tech;
 	ID3DX11EffectTechnique* Light2Tech;
@@ -287,23 +286,22 @@ public:
 #pragma endregion
 
 #pragma region InstancedBasicEffect
-class InstancedBasicEffect : public Effect
-{
+class InstancedBasicEffect : public Effect {
 public:
-	InstancedBasicEffect(ID3D11Device* device, const std::wstring& filename);
+	InstancedBasicEffect( ID3D11Device* device, const std::wstring& filename );
 	~InstancedBasicEffect();
 
-	void SetViewProj(CXMMATRIX M)                       { ViewProj->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorld(CXMMATRIX M)                          { World->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetWorldInvTranspose(CXMMATRIX M)              { WorldInvTranspose->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetTexTransform(CXMMATRIX M)                   { TexTransform->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetEyePosW(const XMFLOAT3& v)                  { EyePosW->SetRawValue(&v, 0, sizeof(XMFLOAT3)); }
-	void SetFogColor(const FXMVECTOR v)                 { FogColor->SetFloatVector(reinterpret_cast<const float*>(&v)); }
-	void SetFogStart(float f)                           { FogStart->SetFloat(f); }
-	void SetFogRange(float f)                           { FogRange->SetFloat(f); }
-	void SetDirLights(const DirectionalLight* lights)   { DirLights->SetRawValue(lights, 0, 3 * sizeof(DirectionalLight)); }
-	void SetMaterial(const Material& mat)               { Mat->SetRawValue(&mat, 0, sizeof(Material)); }
-	void SetDiffuseMap(ID3D11ShaderResourceView* tex)   { DiffuseMap->SetResource(tex); }
+	void SetViewProj( CXMMATRIX M ) { ViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorld( CXMMATRIX M ) { World->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetWorldInvTranspose( CXMMATRIX M ) { WorldInvTranspose->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetTexTransform( CXMMATRIX M ) { TexTransform->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetEyePosW( const XMFLOAT3& v ) { EyePosW->SetRawValue( &v, 0, sizeof( XMFLOAT3 ) ); }
+	void SetFogColor( const FXMVECTOR v ) { FogColor->SetFloatVector( reinterpret_cast<const float*>(&v) ); }
+	void SetFogStart( float f ) { FogStart->SetFloat( f ); }
+	void SetFogRange( float f ) { FogRange->SetFloat( f ); }
+	void SetDirLights( const DirectionalLight* lights ) { DirLights->SetRawValue( lights, 0, 3*sizeof( DirectionalLight ) ); }
+	void SetMaterial( const Material& mat ) { Mat->SetRawValue( &mat, 0, sizeof( Material ) ); }
+	void SetDiffuseMap( ID3D11ShaderResourceView* tex ) { DiffuseMap->SetResource( tex ); }
 
 	ID3DX11EffectTechnique* Light1Tech;
 	ID3DX11EffectTechnique* Light2Tech;
@@ -349,14 +347,13 @@ public:
 #pragma endregion
 
 #pragma region SkyEffect
-class SkyEffect : public Effect
-{
+class SkyEffect : public Effect {
 public:
-	SkyEffect(ID3D11Device* device, const std::wstring& filename);
+	SkyEffect( ID3D11Device* device, const std::wstring& filename );
 	~SkyEffect();
 
-	void SetWorldViewProj(CXMMATRIX M)                  { WorldViewProj->SetMatrix(reinterpret_cast<const float*>(&M)); }
-	void SetCubeMap(ID3D11ShaderResourceView* cubemap)  { CubeMap->SetResource(cubemap); }
+	void SetWorldViewProj( CXMMATRIX M ) { WorldViewProj->SetMatrix( reinterpret_cast<const float*>(&M) ); }
+	void SetCubeMap( ID3D11ShaderResourceView* cubemap ) { CubeMap->SetResource( cubemap ); }
 
 	ID3DX11EffectTechnique* SkyTech;
 
@@ -367,10 +364,9 @@ public:
 #pragma endregion
 
 #pragma region Effects
-class Effects
-{
+class Effects {
 public:
-	static void InitAll(ID3D11Device* device);
+	static void InitAll( ID3D11Device* device );
 	static void DestroyAll();
 
 	static BasicEffect* BasicFX;

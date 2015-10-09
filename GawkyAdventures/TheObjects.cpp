@@ -74,7 +74,7 @@ void TheObjects::draw(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTech
 		Effects::GawkyFX->SetWorld(world);
 		Effects::GawkyFX->SetWorldInvTranspose(worldInvTranspose);
 		Effects::GawkyFX->SetWorldViewProj(worldViewProj);
-
+		Effects::GawkyFX->SetViewProj( viewProj );
 
 
 
@@ -88,9 +88,10 @@ void TheObjects::draw(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTech
 			Effects::GawkyFX->SetDiffuseMap(mObjectInstances[modelIndex].Model->DiffuseMapSRV[subset]);
 			//Effects::BasicFX->SetNormalMap(mModelInstances[modelIndex].Model->NormalMapSRV[subset]);
 
-			activeTexTech->GetPassByIndex(0)->Apply(0, dc);
+			activeTexTech->GetPassByName("P0")->Apply(0, dc);
 			mObjectInstances[modelIndex].Model->ModelMesh.Draw(dc, subset);
-
+			activeTexTech->GetPassByName( "P1" )->Apply( 0, dc );
+			mObjectInstances[modelIndex].Model->ModelMesh.Draw( dc, subset );
 
 
 
