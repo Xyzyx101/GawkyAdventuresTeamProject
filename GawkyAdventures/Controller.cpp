@@ -106,15 +106,7 @@ void Controller::CheckControllerState(HWND hWnd) {
 
 	switch (mControllerState.Gamepad.wButtons) {
 	case XINPUT_GAMEPAD_A :					// A-Button
-		if (mPlayer->getOnGround() == true) {
-			if (XMVectorGetY(mCharDirection) == 0.0f) {
-				mCharDirection = mCharDirection + jumpUp;
-			}
-			else
-			{
-				XMVectorSetY(mCharDirection, 0.0f);
-			}
-		}
+
 		break;
 	case XINPUT_GAMEPAD_B :					// B-Button
 		SoundSystem::Play(SOUND::QUACK);

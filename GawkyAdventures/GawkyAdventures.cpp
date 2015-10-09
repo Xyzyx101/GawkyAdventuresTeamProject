@@ -41,13 +41,9 @@ public:
 private:
 
 	Sky* mSky;
-<<<<<<< HEAD
 	Controller* mController;
-
-=======
 	
 	ID3DX11EffectVectorVariable* fxColorVar;
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	XMFLOAT3 mPlayerPosition;
 	XMVECTOR PlayerForward;
 	XMVECTOR PlayerRight;
@@ -101,8 +97,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 
 
 Game::Game(HINSTANCE hInstance)
-	: D3DApp(hInstance), mSky(0), mLightCount(3),
-	mPlayerPosition(0.0f, 2.0f, 0.0f), DeltaTimeF(0.0f), totEnemy(0), totCollect(0)
+	: D3DApp(hInstance), mSky(0), mLightCount(3), DeltaTimeF(0.0f), totEnemy(0), totCollect(0)
 
 {
 	mMainWndCaption = L"Adventures of Gawky";
@@ -448,10 +443,6 @@ void Game::DrawScene()
 
 	// Set per frame constants.
 	Effects::GawkyFX->SetDirLights(mDirLights);
-<<<<<<< HEAD
-	// Effects::GawkyFX->SetEyePosW( mCam.GetPosition() );
-=======
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	Effects::GawkyFX->SetCubeMap( mSky->CubeMapSRV() );
 	Effects::GawkyFX->SetPlayerPos(PlayerOne->getPlayerPosition());
 	//fxColorVar->SetFloatVector((float*)&mPlayerPosition);
@@ -529,10 +520,6 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 {
 
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////updates
 
 void Game::UpdateScene(float dt)
 {
@@ -662,9 +649,6 @@ void Game::UpdateScene(float dt)
 		desiredCharDir += -(camRight);
 		moveChar = true;
 	}
-<<<<<<< HEAD
-	if (PlayerOne->getOnGround() == true)
-=======
 
 
 	if (GetAsyncKeyState('Q') & 0x8000)
@@ -694,16 +678,10 @@ void Game::UpdateScene(float dt)
 	}
 
 	if (GetAsyncKeyState( VK_SPACE ))
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	{
 			desiredCharDir += camUp;
 			moveChar = true;
-<<<<<<< HEAD
 			SoundSystem::Play(SOUND::SAYQUACK);
-		}
-=======
-			SoundSystem::Play(QUACK);
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	}
 
 	mController->CheckControllerState(mhMainWnd);
@@ -713,10 +691,8 @@ void Game::UpdateScene(float dt)
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
-<<<<<<< HEAD
-=======
+
 	/*
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
 	if (PlayerOne->getOnGround() == true)
 	{
@@ -726,14 +702,8 @@ void Game::UpdateScene(float dt)
 	{
 		desiredCharDir += addGravity;
 	}
-<<<<<<< HEAD
-
-	
-	
-	
-=======
 	*/
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
+
 	//		
 	// Switch the number of lights based on key presses.
 	//
@@ -750,28 +720,15 @@ void Game::UpdateScene(float dt)
 	if (GetAsyncKeyState('3') & 0x8000)
 		mLightCount = 3;
 
-
-	
 	////send player information to the camera
 
 	mCam.getPlayerPos(PlayerOne->getPlayerPosition());
 	mCam.getDeltaTime(dt);
 
 	mCam.moveCam();
-<<<<<<< HEAD
-	
-	
-	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
-
-	PlayerOne->update();
-	mController->ResetSettings();
-=======
-
-	//PlayerOne->move();
 
 	PlayerOne->update( dt, desiredCharDir, theEnemies, Objects );
 
->>>>>>> e99ebd0ed7479118b1620d146b443fc52e1851b6
 }
 
 void Game::addDeltaTime(float dt)
