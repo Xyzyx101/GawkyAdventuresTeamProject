@@ -1,6 +1,5 @@
 #include <memory>
 #include <iostream>
-
 #include "PlayState.h"
 #include "d3dUtil.h"
 #include "LevelBuilder.h"
@@ -14,6 +13,7 @@
 #include "Camera.h"
 #include "ModelEnum.h"
 #include "Controller.h"
+#include "ModelLoader.h"
 
 using namespace std;
 
@@ -69,7 +69,13 @@ void PlayState::Entered()
 	dirLights[2].Direction = XMFLOAT3(-0.5f, -1.9f, -1.57735f);
 	
 	sky = new Sky(device, L"Textures//thisskybox.dds", 10000.0f);
-	playerOne = new Player(device, texMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f);
+	playerOne = new Player( device, texMgr, "Models\\gawky.obj", L"Textures\\", 0.0f, 10.0f, 0.0f );
+	ModelLoader* modelLoader = new ModelLoader();
+	if( !playerOne->init( device, modelLoader, texMgr, L"Textures\\" ) ) {
+		wchar_t msgbuf[256];
+		wsprintf( msgbuf, L"\nPlayer Init Failed!!!\n\n" );
+		OutputDebugString( msgbuf );
+	}
 	enemies = new Enemies(device, texMgr);
 	objects = new TheObjects(device, texMgr);
 	level = new LevelBuilder(device, texMgr);
@@ -435,14 +441,10 @@ void PlayState::Update(float dt)
 		float dy = 0.25 * dt;
 		cam->Pitch(-dy);
 	}
-	
-	if (playerOne->getOnGround() == true)
+			if (GetAsyncKeyState( VK_SPACE ))
 	{
-		if (GetAsyncKeyState( VK_SPACE ))
-		{
-			desiredCharDir += camUp;
-			moveChar = true;
-		}
+		desiredCharDir += camUp;
+		moveChar = true;
 	}
 	
 	mController->CheckControllerState( nullptr );
