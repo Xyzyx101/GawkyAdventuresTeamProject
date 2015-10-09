@@ -520,6 +520,10 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 {
 
 }
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////updates
 
 void Game::UpdateScene(float dt)
 {
@@ -728,7 +732,7 @@ void Game::UpdateScene(float dt)
 	mCam.moveCam();
 
 	PlayerOne->update( dt, desiredCharDir, theEnemies, Objects );
-
+	mController->ResetSettings();
 }
 
 void Game::addDeltaTime(float dt)
