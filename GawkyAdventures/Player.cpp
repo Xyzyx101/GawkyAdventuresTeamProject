@@ -648,3 +648,7 @@ void Player::setMoveDirection(XMVECTOR mDirection)
 {
 	moveDirection = mDirection;
 }
+
+void Player::setJump(bool newset) {
+	isJump = newset;
+}

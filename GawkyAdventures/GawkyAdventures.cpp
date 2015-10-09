@@ -422,7 +422,7 @@ bool Game::Init(HINSTANCE hInstance)
 		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
 	}
 
-	mController = new Controller(PlayerOne);
+	mController = new Controller(PlayerOne, &mCam);
 	// init controller
 	mController->InitControllerInput(mhMainWnd);
 	return true;
@@ -601,81 +601,58 @@ void Game::UpdateScene(float dt)
 
 	/////////////////////////////
 
-	XMVECTOR desiredCharDir = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-
-	XMVECTOR playerPos = XMLoadFloat3(&mPlayerPosition);
-
-
-	XMVECTOR camRight = XMLoadFloat3(&mCam.GetRight());
-	XMVECTOR camForward = XMLoadFloat3(&mCam.GetLook());
-	XMVECTOR camUp = XMLoadFloat3(&mCam.GetUp());
-
-	XMVECTOR multiply = XMVectorSet(0.0f, 2.0f, 0.0f, 0.0f);
-
-	camUp = XMVectorAdd(camUp, multiply);
-
-	bool jumpChar = false;
-
-
-	bool moveChar = false;
-
-
-	if (GetAsyncKeyState('W') & 0x8000)
-	{
-		desiredCharDir += (camForward);
-
-		moveChar = true;
-	}
-
-	if (GetAsyncKeyState('S') & 0x8000)
-	{
-		desiredCharDir += -(camForward);
-
-		moveChar = true;
-	}
-	if (GetAsyncKeyState('A') & 0x8000)
-	{
-		desiredCharDir += (camRight);
-
-		moveChar = true;
-	}
-
-
-
-	if (GetAsyncKeyState('D') & 0x8000)
-	{
-		desiredCharDir += -(camRight);
-
-		moveChar = true;
-	}
-
-
 	if (GetAsyncKeyState('Q') & 0x8000)
 	{
 		float dy = 1.5 * dt;
 		mCam.RotateY(-dy);
 	}
-
 	if (GetAsyncKeyState('E') & 0x8000)
 	{
 
 		float dy = 1.5 * dt;
 		mCam.RotateY(dy);
 	}
-
-
 	if (GetAsyncKeyState('R') & 0x8000)
 	{
 		float dy = 0.25 * dt;
 		mCam.Pitch(dy);
 	}
-
 	if (GetAsyncKeyState('F') & 0x8000)
 	{
 		float dy = 0.25 * dt;
 		mCam.Pitch(-dy);
 	}
 
+	// PLAYER MOVEMENT
+	XMVECTOR desiredCharDir = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+	XMVECTOR playerPos = XMLoadFloat3(&mPlayerPosition);
+	XMVECTOR camRight = XMLoadFloat3(&mCam.GetRight());
+	XMVECTOR camForward = XMLoadFloat3(&mCam.GetLook());
+	XMVECTOR camUp = XMLoadFloat3(&mCam.GetUp());
+	XMVECTOR multiply = XMVectorSet(0.0f, 2.0f, 0.0f, 0.0f);
+	camUp = XMVectorAdd(camUp, multiply);
+	bool jumpChar = false;
+	bool moveChar = false;
+	if (GetAsyncKeyState('W') & 0x8000)
+	{
+		desiredCharDir += (camForward);
+		moveChar = true;
+	}
+	if (GetAsyncKeyState('S') & 0x8000)
+	{ 
+		desiredCharDir += -(camForward);
+		moveChar = true;
+	}
+	if (GetAsyncKeyState('A') & 0x8000)
+	{
+		desiredCharDir += (camRight);
+		moveChar = true;
+	}
+	if (GetAsyncKeyState('D') & 0x8000)
+	{
+		desiredCharDir += -(camRight);
+		moveChar = true;
+	}
 	if (PlayerOne->getOnGround() == true)
 	{
 		if (GetAsyncKeyState( VK_SPACE ))
@@ -684,25 +661,28 @@ void Game::UpdateScene(float dt)
 			moveChar = true;
 			SoundSystem::Play(SOUND::SAYQUACK);
 		}
-
 	}
+
+	mController->CheckControllerState(mhMainWnd);
+	// work-around for getting directionchange made by controller (if any)
+	desiredCharDir += mController->GetCharDirection();		
 
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
-
 	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
-
 	if (PlayerOne->getOnGround() == true)
 	{
 
 	}
 	else if (PlayerOne->getOnGround() == false)
 	{
-
 		desiredCharDir += addGravity;
 	}
 
+	
+	
+	
 	//		
 	// Switch the number of lights based on key presses.
 	//
@@ -720,18 +700,19 @@ void Game::UpdateScene(float dt)
 		mLightCount = 3;
 
 
-	mController->CheckControllerState(mhMainWnd);
+	
 	////send player information to the camera
 
 	mCam.getPlayerPos(PlayerOne->getPlayerPosition());
 	mCam.getDeltaTime(dt);
 
 	mCam.moveCam();
-
+	
+	
 	PlayerOne->move(dt, desiredCharDir, theEnemies, Objects);
 
 	PlayerOne->update();
-
+	mController->ResetSettings();
 }
 
 void Game::addDeltaTime(float dt)

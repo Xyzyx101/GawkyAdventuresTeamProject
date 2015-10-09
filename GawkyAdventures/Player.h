@@ -29,6 +29,7 @@ public:
 
 	///setters
 	void setLevelCollisions(std::vector <XNA::AxisAlignedBox> &thelevelCollisions);
+	void setJump(bool newSetting);
 
 	///getters	
 	XMFLOAT3 getPlayerPosition(); 

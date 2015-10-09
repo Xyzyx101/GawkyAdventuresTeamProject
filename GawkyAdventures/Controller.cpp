@@ -1,11 +1,13 @@
 #include "Controller.h"
 #include "SoundSystem.h"
 
-Controller::Controller(Player* playerOne) :
+Controller::Controller(Player* playerOne, Camera* camOne) :
 mIsControllerConnected(false),
-mPlayer(playerOne)
+mPlayer(playerOne),
+mCamOne(camOne)
 {
 	mLastEnumTime = ::GetTickCount64();
+	mCharDirection = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 
@@ -47,6 +49,8 @@ void Controller::CheckControllerState(HWND hWnd) {
 		return;
 	}
 
+	// USE RECOG. AND ACTION
+
 	// LEFT THUMB STICK
 	float LX = mControllerState.Gamepad.sThumbLX;
 	float LY = mControllerState.Gamepad.sThumbLY;
@@ -58,13 +62,15 @@ void Controller::CheckControllerState(HWND hWnd) {
 	// check if controller is outside a circular dead zone
 	if (magnitudeL > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE) {		// IF LEFT STICK IS MOVED
 		
-		SoundSystem::Play(SOUND::MOBDEATH);
 		// clip the magnitude at its expected max value
 		if (magnitudeL > 32767) { magnitudeL = 32767; }
 		// adjust magnitude relative to the end of the dead zone
 		magnitudeL -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeL = magnitudeL / (32767 - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+		if (magnitudeL > 4890 && magnitudeL < 4900) {
+			SoundSystem::Play(SOUND::PICKUP);
+		}
 	}
 	else {
 		magnitudeL = 0.0;
@@ -82,23 +88,33 @@ void Controller::CheckControllerState(HWND hWnd) {
 	// check if controller is outside a circular dead zone
 	if (magnitudeR > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE) {		// IF RIGHT STICK IS MOVED
 		
-		SoundSystem::Play(SOUND::PICKUP);
 		// clip the magnitude at its expected max value
 		if (magnitudeR > 32767) { magnitudeR = 32767; }
 		// adjust magnitude relative to the end of the dead zone
 		magnitudeR -= XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeR = magnitudeR / (32767 - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+		
 	}
 	else {
 		magnitudeR = 0.0;
 		normalizedMagnitudeR = 0.0;
 	}
-	
-	// controller use and what to do...
+
+	XMVECTOR jumpUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+	XMVECTOR flyUp = XMVectorSet(0.0f, 0.2f, 0.0f, 0.0f);
+
 	switch (mControllerState.Gamepad.wButtons) {
 	case XINPUT_GAMEPAD_A :					// A-Button
-		SoundSystem::Play(SOUND::SAYQUACK);
+		if (mPlayer->getOnGround() == true) {
+			if (XMVectorGetY(mCharDirection) == 0.0f) {
+				mCharDirection = mCharDirection + jumpUp;
+			}
+			else
+			{
+				XMVectorSetY(mCharDirection, 0.0f);
+			}
+		}
 		break;
 	case XINPUT_GAMEPAD_B :					// B-Button
 		SoundSystem::Play(SOUND::QUACK);
@@ -110,26 +126,40 @@ void Controller::CheckControllerState(HWND hWnd) {
 		SoundSystem::Play(SOUND::MOBDEATH);
 		break;
 	case XINPUT_GAMEPAD_LEFT_THUMB :		// when left stick is pressed in
-		SoundSystem::Play(SOUND::PICKUP);
+		Vibrate(65535, 0);
 		break;
 	case XINPUT_GAMEPAD_RIGHT_THUMB:		// when right stick is pressed in
-		SoundSystem::Play(SOUND::PICKUP);
+		Vibrate(0, 65535);
 		break;
 	case XINPUT_GAMEPAD_START :				// Start-Button
-		SoundSystem::Play(SOUND::MOBDEATH);
+		Vibrate(0, 0);
 		break;
 	case XINPUT_GAMEPAD_BACK :				// Back-Button (select)
-		SoundSystem::Play(SOUND::MOBDEATH);
+		Vibrate(65535, 65535);
 		break;
 	case XINPUT_GAMEPAD_LEFT_SHOULDER :		// Left-Upper Trigger
 		SoundSystem::Play(SOUND::PICKUP);
 		break;
 	case XINPUT_GAMEPAD_RIGHT_SHOULDER :		// Right-Upper Trigger
-		SoundSystem::Play(SOUND::PICKUP);
+			mCharDirection = mCharDirection + flyUp;
 		break;
 	default:
 		break;
 	}
+}
 
+XMVECTOR Controller::GetCharDirection() {
+	return mCharDirection;
+}
 
+void Controller::ResetSettings() {
+	mCharDirection = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+void Controller::Vibrate(int leftVal, int rightVal) {
+	XINPUT_VIBRATION Vibration;
+	ZeroMemory(&Vibration, sizeof(XINPUT_VIBRATION));
+	Vibration.wLeftMotorSpeed = leftVal;
+	Vibration.wRightMotorSpeed = rightVal;
+	XInputSetState(mControllerNum, &Vibration);
 }
