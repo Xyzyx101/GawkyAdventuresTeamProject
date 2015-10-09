@@ -34,6 +34,8 @@ void Controller::InitControllerInput(HWND hWnd) {
 }
 
 void Controller::CheckControllerState(HWND hWnd) {
+	XMVECTOR camRight = XMLoadFloat3(&mCamOne->GetRight());
+	XMVECTOR camForward = XMLoadFloat3(&mCamOne->GetLook());
 
 	if (!mIsControllerConnected) { return; }
 	UINT64 currentTime = ::GetTickCount64();
@@ -69,10 +71,22 @@ void Controller::CheckControllerState(HWND hWnd) {
 		magnitudeL -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeL = magnitudeL / (32767 - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
-		if (magnitudeL > 5000 && magnitudeL < 8000) {
-			SoundSystem::Play(SOUND::PICKUP);
+		if (LX > 5000) {
+			// move right
+			mCharDirection += -(camRight);
 		}
-
+		if (LX < -5000) {
+			//move left
+			mCharDirection += (camRight);
+		}
+		if (LY > 5000) {
+			// move forward
+			mCharDirection += (camForward);
+		}
+		if (LY < 5000) {
+			// move back
+			mCharDirection += -(camForward);
+		}
 	}
 	else {
 		magnitudeL = 0.0;
@@ -97,6 +111,7 @@ void Controller::CheckControllerState(HWND hWnd) {
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeR = magnitudeR / (32767 - XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
 		
+
 	}
 	else {
 		magnitudeR = 0.0;
