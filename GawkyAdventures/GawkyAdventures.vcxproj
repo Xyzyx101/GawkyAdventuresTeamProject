@@ -96,6 +96,8 @@
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)FX\%(Filename).fxo</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="FX\Gawky.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </EntryPointName>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)FX\%(Filename).fxo</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="FX\LightHelper.fx">
@@ -118,6 +120,7 @@
     <ClCompile Include="Effects.cpp" />
     <ClCompile Include="Enemies.cpp" />
     <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="GameStateManager.cpp" />
     <ClCompile Include="GameTimer.cpp" />
@@ -160,6 +163,7 @@
     <ClInclude Include="Enemies.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="FSM.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GameStateManager.h" />
     <ClInclude Include="GameTimer.h" />

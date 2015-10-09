@@ -28,7 +28,7 @@ public:
 	HINSTANCE AppInst()const;
 	HWND      MainWnd()const;
 	float     AspectRatio()const;
-	
+	ID3D11Device* deviceAddress;
 	int Run();
  
 	// Framework methods.  Derived client class overrides these methods to 

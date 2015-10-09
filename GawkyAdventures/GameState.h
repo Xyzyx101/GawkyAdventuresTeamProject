@@ -1,8 +1,6 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
-namespace Gawky { namespace Game { namespace States {
-
 	class GameState
 	{
 	public:
@@ -20,5 +18,4 @@ namespace Gawky { namespace Game { namespace States {
 		virtual void Update( float dt ) = 0;
 		virtual void Draw() = 0;
 	};
-		}}}
 #endif //GAMESTATE_H

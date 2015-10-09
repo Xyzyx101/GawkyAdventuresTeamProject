@@ -548,4 +548,3 @@ void D3DApp::CalculateFrameStats()
 	}
 }
 
-

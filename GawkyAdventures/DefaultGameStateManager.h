@@ -3,12 +3,12 @@
 
 #include <vector>
 #include <utility>
+#include "d3dApp.h"
+#include "TextureMgr.h"
 
 #include "GameStateManager.h"
 
-namespace Gawky{ namespace Game{ namespace States{
-
-	//Stacked game state manager that forwards Draw() and Update() calls
+	//Stacked game state manager
 	class DefaultGameStateManager : public GameStateManager
 	{
 	private:
@@ -23,6 +23,8 @@ namespace Gawky{ namespace Game{ namespace States{
 	public:
 		//Initializes a new game state manager
 		DefaultGameStateManager();
+		//Initialize the gameState
+		void Init();
 		//Destroy the game state manager, leaving and dropping any active game state
 		virtual ~DefaultGameStateManager();
 		// returns the lastmost game state on the stack
@@ -32,9 +34,9 @@ namespace Gawky{ namespace Game{ namespace States{
 		// Removes the last most game state form the stack, returns the state removed from the stack
 		virtual std::shared_ptr<GameState> Pop();
 		// advances the time of the active game states
-		void Update(float elapsedTime);
+		void Update(float dt);
 		// Instructs the active game states to render themselves or to update the scene graph
-		void Draw(float elapsedTime);
+		void Draw();
 	};
-		}}}
+
 #endif //DEFAULTGAMESTATEMANAGER_H

@@ -2,8 +2,6 @@
 #define GAMESTATEMANAGER_H
 
 #include <memory>
-
-namespace Gawky { namespace Game { namespace States{
 	
 	enum MODE {
 		EXCLUSIVE,
@@ -39,7 +37,4 @@ namespace Gawky { namespace Game { namespace States{
 			return currentState;
 		}
 	};
-
-}}}
-
 #endif // GAMESTATEMANAGER_H

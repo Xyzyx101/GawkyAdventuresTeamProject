@@ -3,10 +3,11 @@
 
 #include <stdexcept>
 
-namespace Gawky { namespace Game { namespace States {
+DefaultGameStateManager::DefaultGameStateManager(){}
 
-	DefaultGameStateManager::DefaultGameStateManager(){}
-	DefaultGameStateManager::~DefaultGameStateManager()
+void DefaultGameStateManager::Init(){}
+
+DefaultGameStateManager::~DefaultGameStateManager()
 	{
 		while (!this->activeStates.empty())
 		{
@@ -26,7 +27,7 @@ namespace Gawky { namespace Game { namespace States {
 		}
 	}
 
-	void DefaultGameStateManager::Push(const std::shared_ptr<GameState> &state, MODE mode /* = Modality::Exclusive */)
+	void DefaultGameStateManager::Push(const std::shared_ptr<GameState> &state, MODE mode)
 	{
 		this->activeStates.push_back(std::make_pair(state, mode));
 
@@ -51,16 +52,14 @@ namespace Gawky { namespace Game { namespace States {
 		return popped.first;
 	}
 
-	void DefaultGameStateManager::Update(float elapsedTime)
+	void DefaultGameStateManager::Update(float dt)
 	{
-		//TODO make this work
-		// activeState->Update(dt);
+		this->activeStates.at(this->activeStates.size() - 1).first->Update(dt);
 	}
 
-	void DefaultGameStateManager::Draw(float elapsedFrameTime)
+	void DefaultGameStateManager::Draw()
 	{
-		// TODO make this work
-		// activeState->Draw();
+		this->activeStates.at(this->activeStates.size() - 1).first->Draw();
 	}
 
 	void DefaultGameStateManager::notifyObscuredStates()
@@ -114,4 +113,3 @@ namespace Gawky { namespace Game { namespace States {
 			++i;
 		}
 	}
-}}}
