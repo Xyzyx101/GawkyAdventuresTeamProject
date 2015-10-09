@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "ModelEnum.h"
 #include "ModelLoader.h"
+#include "Controller.h"
 
 class Game : public D3DApp
 {
@@ -40,6 +41,7 @@ public:
 private:
 
 	Sky* mSky;
+	Controller* mController;
 	
 	ID3DX11EffectVectorVariable* fxColorVar;
 	XMFLOAT3 mPlayerPosition;
@@ -95,8 +97,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 
 
 Game::Game(HINSTANCE hInstance)
-	: D3DApp(hInstance), mSky(0), mLightCount(3),
-	mPlayerPosition(0.0f, 2.0f, 0.0f), DeltaTimeF(0.0f), totEnemy(0), totCollect(0)
+	: D3DApp(hInstance), mSky(0), mLightCount(3), DeltaTimeF(0.0f), totEnemy(0), totCollect(0)
 
 {
 	mMainWndCaption = L"Adventures of Gawky";
@@ -110,7 +111,7 @@ Game::Game(HINSTANCE hInstance)
 	mCam.playerInfo(PlayerForward, PlayerRight, PlayerUp);
 	mCam.SetPosition(0.0f, 2.0f, -20.0f);
 
-	//mSound = 0;
+	
 
 	mDirLights[0].Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	mDirLights[0].Diffuse = XMFLOAT4(0.9f, 0.9f, 0.9f, 1.0f);
@@ -130,11 +131,11 @@ Game::Game(HINSTANCE hInstance)
 
 Game::~Game()
 {
-	// if sound exists, delete
-	//if (mSound) {
-	//	delete mSound;
-	//	mSound = 0;
-	//}
+	// if controller existed
+	if (mController) {
+		delete mController;
+		mController = 0;
+	}
 
 	SafeDelete(mSky);
 	SafeDelete(Objects);
@@ -410,16 +411,17 @@ bool Game::Init(HINSTANCE hInstance)
 	//////////////////////////////////////////////////////////
 
 	
-	// create sound object
-	HRESULT result;\
+	HRESULT result;
 	// init the sound object
 	result = SoundSystem::Init(mhMainWnd);
 	if (!result) {
-		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex Sound!", L"Error", MB_OK);
+		MessageBox(mhMainWnd, L"Could not initialize FMOD_Ex sound!", L"Error", MB_OK);
 		return true;	// returning true or we'll drop out of game init = let game play even if sound load fails
 	}
 
-
+	mController = new Controller(PlayerOne, &mCam);
+	// init controller
+	mController->InitControllerInput(mhMainWnd);
 	return true;
 }
 
@@ -518,10 +520,6 @@ void Game::OnMouseMove(WPARAM btnState, int x, int y)
 {
 
 }
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-//////////////////////////////////////////////////////updates
 
 void Game::UpdateScene(float dt)
 {
@@ -562,7 +560,7 @@ void Game::UpdateScene(float dt)
 
 		int something = 0;
 		LevelCollisions.pop_back();
-
+				
 		int j = 0;
 		for (UINT i = tempLevel.size(); i < (tempLevel.size() + tempObject.size()); i++, j++)
 		{
@@ -599,51 +597,56 @@ void Game::UpdateScene(float dt)
 
 	/////////////////////////////
 
+	if (GetAsyncKeyState('Q') & 0x8000)
+	{
+		float dy = 1.5 * dt;
+		mCam.RotateY(-dy);
+	}
+	if (GetAsyncKeyState('E') & 0x8000)
+	{
+
+		float dy = 1.5 * dt;
+		mCam.RotateY(dy);
+	}
+	if (GetAsyncKeyState('R') & 0x8000)
+	{
+		float dy = 0.25 * dt;
+		mCam.Pitch(dy);
+	}
+	if (GetAsyncKeyState('F') & 0x8000)
+	{
+		float dy = 0.25 * dt;
+		mCam.Pitch(-dy);
+	}
+
+	// PLAYER MOVEMENT
 	XMVECTOR desiredCharDir = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
-
 	XMVECTOR playerPos = XMLoadFloat3(&mPlayerPosition);
-
-
 	XMVECTOR camRight = XMLoadFloat3(&mCam.GetRight());
 	XMVECTOR camForward = XMLoadFloat3(&mCam.GetLook());
 	XMVECTOR camUp = XMLoadFloat3(&mCam.GetUp());
-
 	XMVECTOR multiply = XMVectorSet(0.0f, 2.0f, 0.0f, 0.0f);
-
 	camUp = XMVectorAdd(camUp, multiply);
-
 	bool jumpChar = false;
-
-
 	bool moveChar = false;
-
-
 	if (GetAsyncKeyState('W') & 0x8000)
 	{
 		desiredCharDir += (camForward);
-
 		moveChar = true;
 	}
-
 	if (GetAsyncKeyState('S') & 0x8000)
-	{
+	{ 
 		desiredCharDir += -(camForward);
-
 		moveChar = true;
 	}
 	if (GetAsyncKeyState('A') & 0x8000)
 	{
 		desiredCharDir += (camRight);
-
 		moveChar = true;
 	}
-
-
-
 	if (GetAsyncKeyState('D') & 0x8000)
 	{
 		desiredCharDir += -(camRight);
-
 		moveChar = true;
 	}
 
@@ -678,25 +681,29 @@ void Game::UpdateScene(float dt)
 	{
 			desiredCharDir += camUp;
 			moveChar = true;
-			SoundSystem::Play(QUACK);
+			SoundSystem::Play(SOUND::SAYQUACK);
 	}
+
+	mController->CheckControllerState(mhMainWnd);
+	// work-around for getting directionchange made by controller (if any)
+	desiredCharDir += mController->GetCharDirection();		
 
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
+
 	/*
 	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
-
 	if (PlayerOne->getOnGround() == true)
 	{
 
 	}
 	else if (PlayerOne->getOnGround() == false)
 	{
-
 		desiredCharDir += addGravity;
 	}
 	*/
+
 	//		
 	// Switch the number of lights based on key presses.
 	//
@@ -713,16 +720,12 @@ void Game::UpdateScene(float dt)
 	if (GetAsyncKeyState('3') & 0x8000)
 		mLightCount = 3;
 
-
-
 	////send player information to the camera
 
 	mCam.getPlayerPos(PlayerOne->getPlayerPosition());
 	mCam.getDeltaTime(dt);
 
 	mCam.moveCam();
-
-	//PlayerOne->move();
 
 	PlayerOne->update( dt, desiredCharDir, theEnemies, Objects );
 

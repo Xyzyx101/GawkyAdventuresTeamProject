@@ -27,9 +27,12 @@ public:
 	void updateCollisions( Enemies* guys, TheObjects* things );
 	void setMoveDirection(XMVECTOR mDirection);
 	void setLevelCollisions(std::vector <XNA::AxisAlignedBox> &thelevelCollisions);
-	void drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTechnique* activeTexTech);
+	void setJump(bool newSetting);
 
-	XMFLOAT3 getPlayerPosition();
+	///getters	
+	XMFLOAT3 getPlayerPosition(); 
+	bool getOnGround();
+	void drawPlayer(ID3D11DeviceContext* dc, Camera& camera, ID3DX11EffectTechnique* activeTexTech);
 
 private:
 	// FSM functions
@@ -98,4 +101,5 @@ private:
 	int hitThing;
 	int hitEnemy;
 	bool killEnemy;
+	bool isJump;
 };

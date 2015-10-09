@@ -134,6 +134,18 @@ bool SoundSystem::Init(HWND hWnd) {
 			MessageBox(hWnd, L"FMOD_Ex setMode(sound3) Failed!", L"FMOD Error", MB_OK);
 			return false;
 		}
+		// create sound4
+		result = instance->system->createSound("Sound\\blop.wav", FMOD_HARDWARE, 0, &instance->sound4);
+		if (result != FMOD_OK) {
+			MessageBox(hWnd, L"FMOD_Ex createSound(sound4) Failed!", L"FMOD Error", MB_OK);
+			return false;
+		}
+		// sound4 settings
+		result = instance->sound4->setMode(FMOD_LOOP_OFF);
+		if (result != FMOD_OK) {
+			MessageBox(hWnd, L"FMOD_Ex setMode(sound4) Failed!", L"FMOD Error", MB_OK);
+			return false;
+		}
 		// LOAD & PLAY MUSIC
 		// create a stream for our BGMusic
 		result = instance->system->createStream("Sound\\ElectroSong.wav", FMOD_HARDWARE | FMOD_LOOP_NORMAL | FMOD_2D, 0, &instance->music);
@@ -158,6 +170,7 @@ bool SoundSystem::Init(HWND hWnd) {
 		instance->channel1 = 0;
 		instance->channel2 = 0;
 		instance->channel3 = 0;
+		instance->channel4 = 0;
 	}
 	return true;
 }
@@ -195,6 +208,16 @@ void SoundSystem::Play(SOUND soundName) {
 		}
 		if (!channelPlaying) {
 			result = instance->system->playSound(FMOD_CHANNEL_FREE, instance->sound3, false, &instance->channel3);
+			if (result != FMOD_OK) { return; }
+		}
+		channelPlaying = false;
+		break;
+	case PICKUP:
+		if (instance->channel4) {
+			result = instance->channel4->isPlaying(&channelPlaying);
+		}
+		if (!channelPlaying) {
+			result = instance->system->playSound(FMOD_CHANNEL_FREE, instance->sound4, false, &instance->channel4);
 			if (result != FMOD_OK) { return; }
 		}
 		channelPlaying = false;
