@@ -28,7 +28,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
 	md3dDriverType(D3D_DRIVER_TYPE_HARDWARE),
 	mClientWidth(1920),
 	mClientHeight(1080),
-	mEnable4xMsaa(false),
+	mEnable4xMsaa(true),
 	mhMainWnd(0),
 	mAppPaused(false),
 	mMinimized(false),

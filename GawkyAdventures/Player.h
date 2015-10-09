@@ -74,6 +74,7 @@ private:
 	XMFLOAT3 mPlayerScale;
 	XMFLOAT4 mPlayerRotationQuad;
 	XMFLOAT4 mPlayerRotation;
+	float mPlayerRotAngle;
 
 	XMFLOAT3 mOPlayerPosition;
 	XMFLOAT3 mOPlayerScale;
@@ -104,7 +105,7 @@ private:
 	XMVECTOR charPosition;
 	XMVECTOR moveDirection;
 
-	XMVECTOR tripDirection;
+	//XMVECTOR tripDirection;
 	XMVECTOR tripDistance;
 
 	// Bounding box of the Player
@@ -135,5 +136,15 @@ private:
 	BasicModel* playerModel;
 
 	BasicModelInstance mPlayer;
+
+	XMFLOAT3 desiredDirection;
+	float verticalVelocity;
+	XMFLOAT3 jumpDirection;
+	XMFLOAT3 tripDirection;
+	float tripTimer;
+	float speed;
+	int hitThing;
+	int hitEnemy;
+	bool killEnemy;
 };
 

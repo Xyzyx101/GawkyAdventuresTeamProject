@@ -23,7 +23,11 @@ mOPlayerScale( 0.03f, 0.03f, 0.03f ),
 mOPlayerRotation( 0.0f, 0.0f, 0.0f, 1.0f ),
 isAlive( true ),
 isImmune( false ),
-isTripping( false ) {
+isTripping( false ),
+verticalVelocity( 0.f ),
+speed( 30.f ),
+killEnemy(false)
+{
 	currCharDirection = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
 	oldCharDirection = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
 	charPosition = XMVectorSet( 0.0f, 3.0f, 0.0f, 0.0f );
@@ -99,11 +103,11 @@ bool Player::init( ID3D11Device* device, ModelLoader* loader, TextureMgr& texMgr
 	mDiffuseSRV = texMgr.CreateTexture( texturePath+L"Gawky2_diffuse_color.png" );
 	mMaterial.Ambient = XMFLOAT4( 0.2f, 0.2f, 0.2f, 1.f );
 	mMaterial.Diffuse = XMFLOAT4( 0.8f, 0.8f, 0.8f, 1.f );
-	mMaterial.Specular = XMFLOAT4( 0.5f, 0.5f, 0.5f, 32.f ); // w = spec pow
+	mMaterial.Specular = XMFLOAT4( 0.5f, 0.5f, 0.0f, 4.f ); // w = spec pow
 	mMaterial.Reflect = XMFLOAT4( 0.f, 0.f, 0.f, 0.f );
 
 	XNA::AxisAlignedBox aabb = loader->GetBoundingBox();
-	mPlayerBox.Center = XMFLOAT3( aabb.Center.x*mPlayerScale.x, aabb.Extents.y*mPlayerScale.y, aabb.Extents.z*mPlayerScale.z);
+	mPlayerBox.Center = XMFLOAT3( aabb.Center.x*mPlayerScale.x, aabb.Extents.y*mPlayerScale.y, aabb.Extents.z*mPlayerScale.z );
 
 	mPlayerBox.Extents = XMFLOAT3( aabb.Extents.x*mPlayerScale.x, aabb.Extents.y*mPlayerScale.y, aabb.Extents.z*mPlayerScale.z );
 	mPlayerBox.collisionType = ctPlayer;
@@ -119,48 +123,69 @@ void Player::setLevelCollisions( std::vector <XNA::AxisAlignedBox> &thelevelColl
 
 
 void Player::update( float dt, XMVECTOR direction, Enemies* guys, TheObjects* things ) {
-	
+
 
 	//XMVECTOR OS = XMLoadFloat3( &mOPlayerScale );
 	//XMVECTOR OP = XMLoadFloat3( &mOPlayerPosition );
 	//XMVECTOR OQ = XMLoadFloat4( &mOPlayerRotationQuad );
 	//XMVECTOR Orot = XMLoadFloat4( &mOPlayerRotation );
 
-	move( dt, direction );
+	XMStoreFloat3( &desiredDirection, direction );
+
+	fsm->Update( dt );
+
+	//move( dt, direction );
+
+	// Gravity
+	mPlayerPosition.y += verticalVelocity * dt;
+	verticalVelocity -= 30.f * dt;
 
 	updateCollisions( guys, things );
 
-	XMVECTOR S = XMLoadFloat3( &mPlayerScale );
-	XMVECTOR P = XMLoadFloat3( &mPlayerPosition );
-	XMVECTOR Q = XMLoadFloat4( &mPlayerRotationQuad );
-	XMVECTOR rot = XMLoadFloat4( &mPlayerRotation );
-	XMStoreFloat4x4( &mPlayer.World, XMMatrixAffineTransformation( S, rot, Q, P ) );
+	if( collisions[ctCollect] ) {
+		things->RemovemObjectInstance( hitThing );
+	}
+	if( collisions[ctEnemy] && killEnemy) {
+		guys->RemovemObjectInstance( hitEnemy );
+	}
+	killEnemy = false;
+	//XMVECTOR S = XMLoadFloat3( &mPlayerScale );
+	//XMVECTOR P = XMLoadFloat3( &mPlayerPosition );
+	//XMVECTOR Q = XMLoadFloat4( &mPlayerRotationQuad );
+	//XMVECTOR rot = XMLoadFloat4( &mPlayerRotation );
+	//XMStoreFloat4x4( &mPlayer.World, XMMatrixAffineTransformation( S, rot, Q, P ) );
+
+	XMMATRIX S = XMMatrixScalingFromVector( XMLoadFloat3( &mPlayerScale ) );
+	XMMATRIX T = XMMatrixTranslationFromVector( XMLoadFloat3( &mPlayerPosition ) );
+	XMMATRIX R = XMMatrixRotationY( mPlayerRotAngle );
+	XMMATRIX world = S*R*T;
+	XMStoreFloat4x4( &mPlayer.World, world );
 
 	animController.Interpolate( dt );
-	
+
 	/*if( hitFeet==true ) {
 		//isJump = false;
 		isFalling = false;
-	}
+		}
 
-	if( isFalling==true||isJump==true ) {
+		if( isFalling==true||isJump==true ) {
 		currGround = 0.0f;
-	}
-	if( fellOffMap==true ) {
+		}
+		if( fellOffMap==true ) {
 		currGround = -500.0f;
-	}
+		}
 
-	if( mPlayerPosition.y<currGround ) {
+		if( mPlayerPosition.y<currGround ) {
 		P = XMVectorSetY( P, currGround );
 		hitHead = false;
 		onGround = true;
-	}
+		}
 
-	if( isAlive==true ) {
+		if( isAlive==true ) {
 		XMStoreFloat3( &mPlayerBox.Center, P );
 		XMStoreFloat3( &mPlayerPosition, P );
 		XMStoreFloat4x4( &mPlayer.World, XMMatrixAffineTransformation( S, rot, Q, P ) );
-	} else if( isAlive==false ) {
+		} else if( isAlive==false ) {
 		mPlayerBox.Center = mOPlayerPosition;
 		mPlayerRotation = mOPlayerRotation;
 		mPlayerPosition = mOPlayerPosition;
@@ -169,8 +194,8 @@ void Player::update( float dt, XMVECTOR direction, Enemies* guys, TheObjects* th
 		XMStoreFloat4x4( &mPlayer.World, XMMatrixAffineTransformation( OS, Orot, OQ, OP ) );
 
 		isAlive = true;
-	}*/
-	
+		}*/
+
 }
 
 
@@ -313,7 +338,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 	currCharDirection = (oldCharDirection)+(direction * destDirLength);
 	currCharDirection = XMVector3Normalize( currCharDirection );
 
-	// get the angle 
+	// get the angle
 	float charDirAngle = XMVectorGetX( XMVector3AngleBetweenNormals( XMVector3Normalize( currCharDirection ), XMVector3Normalize( PlayerForward ) ) );
 
 	if( XMVectorGetY( XMVector3Cross( currCharDirection, PlayerForward ) )>0.0f ) {
@@ -377,7 +402,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 
 		/////////////fooling around with some collision idea's
 
-		//Player is to the left 
+		//Player is to the left
 		if( mPlayerBox.Center.x<=LevelCollisions[i].Center.x ) {
 			tRight = (LevelCollisions[i].Center.x-LevelCollisions[i].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
 		}
@@ -535,7 +560,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 		}
 
 	}
-	
+
 	////////////////////////////////////////////////////////////// ^ collisions
 
 	//	for (UINT i = 0; i < 2; ++i)
@@ -555,7 +580,7 @@ void Player::move( float dt, XMVECTOR direction ) {
 	bool Above = false;
 	bool inFront = false;
 
-	//Player is to the left 
+	//Player is to the left
 	if( mPlayerBox.Center.x<=LevelCollisions[currentObject].Center.x ) {
 		tRight = (LevelCollisions[currentObject].Center.x-LevelCollisions[currentObject].Extents.x)-(mPlayerBox.Center.x+mPlayerBox.Extents.x);
 	}
@@ -583,14 +608,18 @@ void Player::move( float dt, XMVECTOR direction ) {
 			fellOffMap = true;
 		}
 	}
-
 	*/
+
 }
 
 void Player::updateCollisions( Enemies* guys, TheObjects* things ) {
 
 	// Reset Collisions
-	for( auto c:collisions ) { c = false; }
+	for( bool& c:collisions ) { c = false; }
+
+	// Reset Object and Enemy Collisions
+	int collisionThing = 0;
+	int collisionEnemy = 0;
 
 	mPlayerBox.Center = XMFLOAT3( mPlayerPosition.x, mPlayerPosition.y+mPlayerBox.Extents.y, mPlayerPosition.z );
 	// Gawky Bounds
@@ -605,14 +634,21 @@ void Player::updateCollisions( Enemies* guys, TheObjects* things ) {
 
 		// This is in a while loop for edge cases where I hit an object on an angle and need to move in
 		//	two or three axis to avoid collision.
-		while( IntersectAxisAlignedBoxAxisAlignedBox( &mPlayerBox, &collisionObject )) {
+		while( IntersectAxisAlignedBoxAxisAlignedBox( &mPlayerBox, &collisionObject ) ) {
 
 			// Set collision flags
 			// Collision with the ctLevel objects is special and handled below 
 			if( collisionObject.collisionType!=ctLevel ) {
+				if( collisionObject.collisionType==ctStumble||collisionObject.collisionType==ctCollect ) {
+					hitThing = collisionThing;
+				}
+				if( collisionObject.collisionType==ctEnemy ) {
+					hitEnemy = collisionEnemy;
+				}
 				collisions[(int)collisionObject.collisionType] = true;
+				break;
 			}
-			
+
 			////////  Terrain Response ////////////
 			if( collisionObject.collisionType==ctLevel ) {
 				// Object Bounds
@@ -638,7 +674,7 @@ void Player::updateCollisions( Enemies* guys, TheObjects* things ) {
 				} else {
 					xResponse = xPos;
 				}
-				if (abs( yNeg )<yPos){
+				if( abs( yNeg )<yPos ) {
 					yResponse = yNeg;
 				} else {
 					yResponse = yPos;
@@ -655,17 +691,18 @@ void Player::updateCollisions( Enemies* guys, TheObjects* things ) {
 
 				// move player in smallest direction to undo the overlap
 				if( abs( yResponse )<abs( xResponse )&&abs( yResponse )<abs( zResponse ) ) {
-					mPlayerPosition = XMFLOAT3( mPlayerPosition.x, mPlayerPosition.y+yResponse+copysign(epsilon,yResponse), mPlayerPosition.z );
+					mPlayerPosition = XMFLOAT3( mPlayerPosition.x, mPlayerPosition.y+yResponse+copysign( epsilon, yResponse ), mPlayerPosition.z );
 					if( yResponse>0 ) {
 						// I only set the collision flag with ctLevel objects if I moved up so that I can use it to tell if I am standing on the ground.
 						collisions[(int)collisionObject.collisionType] = true;
+						verticalVelocity = 0.f;
 					}
 				} else if( abs( xResponse )<abs( zResponse ) ) {
 					mPlayerPosition = XMFLOAT3( mPlayerPosition.x+xResponse+copysign( epsilon, xResponse ), mPlayerPosition.y, mPlayerPosition.z );
 				} else {
 					mPlayerPosition = XMFLOAT3( mPlayerPosition.x, mPlayerPosition.y, mPlayerPosition.z+zResponse+copysign( epsilon, zResponse ) );
 				}
-				
+
 				//  Recalculate Gawky Bounds
 				mPlayerBox.Center = XMFLOAT3( mPlayerPosition.x, mPlayerPosition.y+mPlayerBox.Extents.y, mPlayerPosition.z );
 				gawkyRight = mPlayerBox.Center.x+mPlayerBox.Extents.x;
@@ -676,7 +713,13 @@ void Player::updateCollisions( Enemies* guys, TheObjects* things ) {
 				gawkyBottom = mPlayerBox.Center.y-mPlayerBox.Extents.y;
 			}
 		}
-		
+
+		if( collisionObject.collisionType==ctStumble||collisionObject.collisionType==ctCollect ) {
+			collisionThing++;
+		}
+		if( collisionObject.collisionType==ctEnemy ) {
+			collisionEnemy++;
+		}
 	}
 }
 
@@ -721,55 +764,177 @@ void Player::initFSM() {
 }
 
 void Player::Idle_Before( float dt ) {
-
+	animController.ChangeAnim( ANIM_NAME::IDLE );
 }
 void Player::Idle_Update( float dt ) {
-
+	XMVECTOR direction = XMLoadFloat3( &desiredDirection );
+	float lengthSq;
+	XMStoreFloat( &lengthSq, XMVector3LengthSq( direction ) );
+	if( lengthSq>0.1f ) {
+		fsm->ChangeState( FSM_STATE::STATE_WALK );
+	}
+	if( desiredDirection.y>0.5 ) {
+		fsm->ChangeState( FSM_STATE::STATE_JUMP );
+	}
+	if( collisions[ctEnemy] || collisions[ctUnkillable]) {
+		fsm->ChangeState( FSM_STATE::STATE_DIE );
+	}
 }
 void Player::Idle_After( float dt ) {
 
 }
-void Player::Walk_Before( float dt ) {
 
+void Player::Walk_Before( float dt ) {
+	animController.ChangeAnim( ANIM_NAME::WALK );
 }
 void Player::Walk_Update( float dt ) {
 
+	XMVECTOR direction = XMLoadFloat3( &desiredDirection );
+	XMMATRIX worldMatrix = XMLoadFloat4x4( &mPlayer.World );
+
+	float lengthSq;
+	XMStoreFloat( &lengthSq, XMVector3LengthSq( direction ) );
+	if( lengthSq<0.1f ) {
+		fsm->ChangeState( FSM_STATE::STATE_IDLE );
+		return;
+	}
+	if( desiredDirection.y>0.5 ) {
+		fsm->ChangeState( FSM_STATE::STATE_JUMP );
+	}
+	if( verticalVelocity<-1.f ) {
+		fsm->ChangeState( FSM_STATE::STATE_FALL );
+	}
+	if( collisions[ctStumble] ) {
+		fsm->ChangeState( FSM_STATE::STATE_TRIP );
+	}
+	if( collisions[ctEnemy]||collisions[ctUnkillable] ) {
+		fsm->ChangeState( FSM_STATE::STATE_DIE );
+	}
+
+	// Normalize our destinated direction vector
+	direction = XMVector3Normalize( direction );
+	direction = XMVectorSetY( direction, 0.0f );
+
+	/////character spinning make it more smooth
+	if( XMVectorGetX( XMVector3Dot( direction, oldCharDirection ) )==-1 ) {
+		oldCharDirection += XMVectorSet( 0.01f, 0.0f, 0.0f, 0.0f );
+	}
+
+	///////get characters position in world space
+	charPosition = XMVectorSet( 0.0f, 0.0f, 0.0f, 0.0f );
+	charPosition = XMVector3TransformCoord( charPosition, worldMatrix );
+
+	///// rotate the character
+	float destDirLength = 10.0f * dt;
+
+	currCharDirection = (oldCharDirection)+(direction * destDirLength);
+	currCharDirection = XMVector3Normalize( currCharDirection );
+
+	oldCharDirection = XMVector3Normalize( currCharDirection );
+
+	// get the angle 
+	float charDirAngle = XMVectorGetX( XMVector3AngleBetweenNormals( XMVector3Normalize( currCharDirection ), XMVector3Normalize( PlayerForward ) ) );
+
+	if( XMVectorGetY( XMVector3Cross( currCharDirection, PlayerForward ) )>0.0f ) {
+		charDirAngle = -charDirAngle;
+	}
+
+	direction = direction * speed * dt;
+	charPosition = charPosition+direction;
+	mPlayerRotAngle = charDirAngle-XM_PI;
+
+	XMStoreFloat3( &mPlayerPosition, charPosition );
 }
 void Player::Walk_After( float dt ) {
 
 }
-void Player::Jump_Before( float dt ) {
 
+void Player::Jump_Before( float dt ) {
+	animController.ChangeAnim( ANIM_NAME::JUMP );
+	// 0.01f in the y is required because I don't want the jump controls to control the direction but normalizing (0,0,0) will break;
+	XMVECTOR jumpDir = XMLoadFloat3( &XMFLOAT3( desiredDirection.x, 0.01f, desiredDirection.z ) );
+	jumpDir = XMVector3NormalizeEst( jumpDir );
+	jumpDir = jumpDir*speed;
+	XMStoreFloat3( &jumpDirection, jumpDir );
+	jumpDirection.y = 0.f;
+	verticalVelocity = 25.f;
 }
 void Player::Jump_Update( float dt ) {
-
+	XMVECTOR pos = XMLoadFloat3( &mPlayerPosition );
+	XMVECTOR dir = XMLoadFloat3( &jumpDirection );
+	pos += dir * dt;
+	XMStoreFloat3( &mPlayerPosition, pos );
+	if( verticalVelocity<0.f ) {
+		fsm->ChangeState( FSM_STATE::STATE_FALL );
+	}
+	if( collisions[ctEnemy]||collisions[ctUnkillable] ) {
+		fsm->ChangeState( FSM_STATE::STATE_DIE );
+	}
 }
 void Player::Jump_After( float dt ) {
 
 }
-void Player::Fall_Before( float dt ) {
 
+void Player::Fall_Before( float dt ) {
+	animController.ChangeAnim( ANIM_NAME::FALL );
 }
 void Player::Fall_Update( float dt ) {
-
+	XMVECTOR pos = XMLoadFloat3( &mPlayerPosition );
+	XMVECTOR dir = XMLoadFloat3( &XMFLOAT3( desiredDirection.x, 0.01f, desiredDirection.z ) );
+	dir = XMVector3Normalize( dir );
+	dir *= speed * 0.5f;
+	dir = XMVectorSetY( dir, 0.f );
+	pos += dir * dt;
+	XMStoreFloat3( &mPlayerPosition, pos );
+	if( collisions[ctLevel] ) {
+		fsm->ChangeState( FSM_STATE::STATE_IDLE );
+	}
+	if( collisions[ctEnemy]||collisions[ctUnkillable] ) {
+		fsm->ChangeState( FSM_STATE::STATE_DIE );
+	}
 }
 void Player::Fall_After( float dt ) {
 
 }
-void Player::Trip_Before( float dt ) {
 
+void Player::Trip_Before( float dt ) {
+	animController.ChangeAnim( ANIM_NAME::TRIP );
+	// 0.01f in the y is required because I don't want the jump controls to control the direction but normalizing (0,0,0) will break;
+	XMVECTOR tripDir = XMLoadFloat3( &XMFLOAT3( desiredDirection.x, 0.01f, desiredDirection.z ) );
+	tripDir = XMVector3NormalizeEst( tripDir );
+	tripDir = tripDir*speed*0.6;
+	XMStoreFloat3( &tripDirection, tripDir );
+	tripDirection.y = 0.f;
+	tripTimer = 3.f;
 }
 void Player::Trip_Update( float dt ) {
-
+	XMVECTOR pos = XMLoadFloat3( &mPlayerPosition );
+	XMFLOAT3 finalTripDirection = XMFLOAT3( tripDirection.x*(tripTimer/2.5f), 0.f, tripDirection.z*(tripTimer/2.5f) );
+	XMVECTOR dir = XMLoadFloat3( &finalTripDirection );
+	pos += dir * dt;
+	XMStoreFloat3( &mPlayerPosition, pos );
+	tripTimer -= dt;
+	if( tripTimer<0.f ) {
+		fsm->ChangeState( FSM_STATE::STATE_IDLE );
+	}
+	if( collisions[ctEnemy] ) {
+		killEnemy = true;
+	}
+	if( collisions[ctUnkillable] ) {
+		fsm->ChangeState( FSM_STATE::STATE_DIE );
+	}
 }
 void Player::Trip_After( float dt ) {
 
 }
-void Player::Die_Before( float dt ) {
 
+void Player::Die_Before( float dt ) {
+	mPlayerPosition = mOPlayerPosition;
+	mPlayerScale = mOPlayerScale;
+	mPlayerRotAngle = 0.f;
 }
 void Player::Die_Update( float dt ) {
-
+	fsm->ChangeState( FSM_STATE::STATE_IDLE );
 }
 
 ////getters

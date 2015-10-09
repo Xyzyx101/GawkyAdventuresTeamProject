@@ -674,21 +674,17 @@ void Game::UpdateScene(float dt)
 		mCam.Pitch(-dy);
 	}
 
-	if (PlayerOne->getOnGround() == true)
+	if (GetAsyncKeyState( VK_SPACE ))
 	{
-		if (GetAsyncKeyState( VK_SPACE ))
-		{
 			desiredCharDir += camUp;
 			moveChar = true;
 			SoundSystem::Play(QUACK);
-		}
-
 	}
 
 	XMVECTOR addGravity = XMVectorSet(0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f);
 	XMFLOAT3 tGrav;
 	XMStoreFloat3(&tGrav, addGravity);
-
+	/*
 	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
 
 	if (PlayerOne->getOnGround() == true)
@@ -700,7 +696,7 @@ void Game::UpdateScene(float dt)
 
 		desiredCharDir += addGravity;
 	}
-
+	*/
 	//		
 	// Switch the number of lights based on key presses.
 	//
