@@ -69,9 +69,10 @@ void Controller::CheckControllerState(HWND hWnd) {
 		magnitudeL -= XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
 		// normalize the magnitude with respect to its expected range 0.0 -> 1.0
 		normalizedMagnitudeL = magnitudeL / (32767 - XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
-		if (magnitudeL > 4890 && magnitudeL < 4900) {
+		if (magnitudeL > 5000 && magnitudeL < 8000) {
 			SoundSystem::Play(SOUND::PICKUP);
 		}
+
 	}
 	else {
 		magnitudeL = 0.0;
