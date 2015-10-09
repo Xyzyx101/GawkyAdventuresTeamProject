@@ -7,6 +7,7 @@
 #include "ModelEnum.h"
 #include "Model.h"
 #include "ModelLoader.h"
+#include "SoundSystem.h"
 
 Player::Player( ID3D11Device* device, TextureMgr& texMgr, const std::string& modelFilename, const std::wstring& texturePath, FLOAT x, FLOAT y, FLOAT z ) :
 mOPlayerPosition( 0.0f, 2.0f, 0.0f ),
@@ -359,6 +360,7 @@ void Player::Walk_Update( float dt ) {
 }
 
 void Player::Jump_Before( float dt ) {
+	SoundSystem::Play( SOUND::SAYQUACK );
 	animController.ChangeAnim( ANIM_NAME::JUMP );
 	// 0.01f in the y is required because I don't want the jump controls to control the direction but normalizing (0,0,0) will break;
 	XMVECTOR jumpDir = XMLoadFloat3( &XMFLOAT3( desiredDirection.x, 0.01f, desiredDirection.z ) );
@@ -445,4 +447,8 @@ XMFLOAT3 Player::getPlayerPosition() {
 ////setters
 void Player::setMoveDirection( XMVECTOR mDirection ) {
 	moveDirection = mDirection;
+}
+
+void Player::setJump(bool newset) {
+	isJump = newset;
 }

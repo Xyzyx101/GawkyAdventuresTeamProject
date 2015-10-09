@@ -28,6 +28,7 @@
 #include "Game.h"
 #include "GameTimer.h"
 
+class Controller;
 
 class PlayState : public GameState
 {
@@ -54,6 +55,7 @@ public:
 private:
 	std::shared_ptr<GameStateManager> gameStateManager;
 	Sky* sky;
+	Controller* mController;
 	DirectionalLight dirLights[3];
 	UINT lightCount;
 	Camera* cam;

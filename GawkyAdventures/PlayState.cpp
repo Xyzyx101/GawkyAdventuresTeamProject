@@ -13,6 +13,7 @@
 #include "LoadOBJ.h"
 #include "Camera.h"
 #include "ModelEnum.h"
+#include "Controller.h"
 
 using namespace std;
 
@@ -302,6 +303,9 @@ void PlayState::Entered()
 			levelCollisions.push_back(temp[i]);
 			totalEnemies++;
 		}
+		mController = new Controller( playerOne, cam );
+		// init controller
+		mController->InitControllerInput( nullptr );
 }
 
 void PlayState::Exiting()
@@ -441,17 +445,14 @@ void PlayState::Update(float dt)
 		}
 	}
 	
-	XMVECTOR addGravity = XMVectorSet(0.0f, -30 * DeltaTimeF, 0.0f, 0.0f);
-	
+	mController->CheckControllerState( nullptr );
+	// work-around for getting directionchange made by controller (if any)
+	desiredCharDir += mController->GetCharDirection();
+
+	XMVECTOR addGravity = XMVectorSet( 0.0f, -30.f * DeltaTimeF, 0.0f, 0.0f );
 	XMFLOAT3 tGrav;
-	XMStoreFloat3(&tGrav, addGravity);
-	
-	XMVECTOR tGravity = XMLoadFloat3(&tGrav);
-	
-	if (!playerOne->getOnGround())
-	{
-		desiredCharDir += addGravity;
-	}
+	XMStoreFloat3( &tGrav, addGravity );
+		
 	////send player information to the camera
 	
 	cam->getPlayerPos(playerOne->getPlayerPosition());
@@ -459,9 +460,8 @@ void PlayState::Update(float dt)
 	
 	cam->moveCam();
 	
-	playerOne->move(dt, desiredCharDir, enemies, objects);
-	
-	playerOne->update();
+	playerOne->update( dt, desiredCharDir, enemies, objects);
+	mController->ResetSettings();
 
 }
 
